@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QWidget)
+from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QWidget, QScrollArea, QSpinBox)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
@@ -14,9 +14,11 @@ import sys          as SYSTEM
 # Zip File
 import zipfile as ZIP
 
-from NetCrawlerService  import NetCrawlerService
-from obj.FlowLayout     import FlowLayout
-from obj.ImageWidget    import ImageWidget
+from obj.FlowLayout             import FlowLayout
+from obj.QRangeSlider           import QRangeSlider
+from manager.ImageLoaderManager import ImageLoaderManager
+from manager.NetCrawlerManager  import NetCrawlerManager
+
 
 
 # 取得ui檔案路徑
@@ -39,10 +41,22 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # 取得內部物件
-        self.searchButton        = self.findChild(QPushButton, name='searchButton')    # 搜尋按鈕
-        self.searchEditText      = self.findChild(QLineEdit, name='searchTextEdit')     # search text
-        self.centerWidget        = self.findChild(QWidget, name='centerScrollAreaWidgetContents')   # image widget
+        self.searchButton:QPushButton       = self.findChild(QPushButton, name='searchButton')    # 搜尋按鈕
+        self.searchEditText:QLineEdit       = self.findChild(QLineEdit, name='searchTextEdit')     # search text
+        self.centerScrollArea:QScrollArea   = self.findChild(QScrollArea, name='centerScrollArea') # center scroll area
+        # floor text
+        self.floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditStart')]
 
+        # initial Image flowLayout 
+        self.flowLayout = FlowLayout()
+        self.centerScrollArea.widget().setLayout( self.flowLayout )
+
+        silder = QRangeSlider()
+        silder.setMin(0)
+        silder.setMax(1000)
+        self.flowLayout.addWidget( silder )
+
+        self.imgLoaderManager = ImageLoaderManager( self.centerScrollArea )
 
         self.initialEvent()
 
@@ -69,16 +83,14 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         if( searchUrl == "" ):
             return
 
-        netImageList = NetCrawlerService().getData( searchUrl, [1, 2] )
+        imageList, ImgWidgetList = NetCrawlerManager().getData( searchUrl, [1, 20] )
         
-        
-        flowLayout = FlowLayout()
+        self.imgLoaderManager.load( ImgWidgetList )
+
         # create center image
-        for netImage in netImageList:
-            flowLayout.addWidget( ImageWidget( netImage ) )
+
        
 
-        self.centerWidget.setLayout( flowLayout )
      
 
     # inital all the event

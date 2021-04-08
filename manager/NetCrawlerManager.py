@@ -4,14 +4,16 @@ import math as MATH
 from bs4 import BeautifulSoup
 
 from obj.NetImage import NetImage
+from obj.ImageWidget import ImageWidget
 
-class NetCrawlerService:
+class NetCrawlerManager:
     MAX_FLOOR_PER_PAGE = 20 # acconding to bahamut page, each page have 20 floor
     def __init__(self):
         self.netImageList = []
+        self.netImageWidgetList = []
         pass
 
-    def getScore( self, element ):
+    def _getScore( self, element ):
         """let score(str) convert to integer"""
         scoreStr = element.select( "span" )[0].text
         if scoreStr ==  "爆":
@@ -23,7 +25,7 @@ class NetCrawlerService:
         else:
             return int(scoreStr)       
 
-    def getUrlData( self, url ):
+    def _getUrlData( self, url: str ):
         # example1 url: https://forum.gamer.com.tw/C.php?bsn=60076&snA=5993618&tnum=54
         # example2 url: https://forum.gamer.com.tw/C.php?page=2&bsn=60076&snA=5993618&tnum=54
         url        = url.split( "bsn=" )[1]        # 60076&snA=5993618&tnum=54
@@ -40,11 +42,11 @@ class NetCrawlerService:
 
         return [bsn, snA, maxFloor, maxPage]
         
-    def getData( self, url, floor=[1, 999999], outputDebugTxt=False ):
+    def getData( self, url: str, floor=[1, 999999], outputDebugTxt=False ):
         """ get the bahamut image"""
 
         # get the info of url
-        [bsn, snA, maxFloor, maxPage] = self.getUrlData( url )
+        [bsn, snA, maxFloor, maxPage] = self._getUrlData( url )
        
         self.bsnPre     = bsn
         self.snaPre     = snA
@@ -84,8 +86,8 @@ class NetCrawlerService:
                 # get this artcle infomation
                 authorID        = article.select( ".userid" )[0].text
                 authorName      = article.select( ".username" )[0].text
-                articleGP       = self.getScore( article.select( ".postgp" )[0] )
-                articleBP       = self.getScore( article.select( ".postbp" )[0] )
+                articleGP       = self._getScore( article.select( ".postgp" )[0] )
+                articleBP       = self._getScore( article.select( ".postbp" )[0] )
 
                 # initial netImage builder
                 netImageBuilder = NetImage.getBuilder()
@@ -97,7 +99,10 @@ class NetCrawlerService:
                 # getting image url
                 for imgURL in article.select( ".photoswipe-image" ):
                     netImageBuilder.setImageUrl( imgURL[ "href" ] )
-                    self.netImageList.append( netImageBuilder.build() )
+                    netImage = netImageBuilder.build()
+
+                    self.netImageList.append( netImage )                            # raw data net image
+                    self.netImageWidgetList.append( ImageWidget( netImage ) )      # net image widget object
 
 
         # just verify web crawler are correct or not
@@ -108,7 +113,7 @@ class NetCrawlerService:
             text_file.close()
 
 
-        return self.netImageList
+        return self.netImageList, self.netImageWidgetList
 
         
         

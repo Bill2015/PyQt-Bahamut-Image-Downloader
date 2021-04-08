@@ -146,7 +146,7 @@ border-radius: 6px;</string>
               <widget class="QPushButton" name="searchButton">
                <property name="minimumSize">
                 <size>
-                 <width>0</width>
+                 <width>90</width>
                  <height>30</height>
                 </size>
                </property>
@@ -157,8 +157,10 @@ border-radius: 6px;</string>
                 </font>
                </property>
                <property name="styleSheet">
-                <string notr="true">color:rgb(195, 195, 195);
-background-color:rgb(255, 247, 137)</string>
+                <string notr="true">color:rgb(73, 57, 255);
+background-color:rgb(255, 247, 137);
+border-style: solid;
+border-radius: 6px;</string>
                </property>
                <property name="text">
                 <string>搜尋</string>
@@ -216,28 +218,23 @@ background-color:rgb(255, 247, 137)</string>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="floorTextEditStart">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+              <widget class="QSpinBox" name="floorTextEditStart">
                <property name="minimumSize">
                 <size>
-                 <width>120</width>
-                 <height>0</height>
+                 <width>80</width>
+                 <height>20</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>120</width>
+                 <width>16777215</width>
                  <height>20</height>
                 </size>
                </property>
                <property name="font">
                 <font>
-                 <family>jf open 粉圓 1.1</family>
+                 <family>微軟正黑體</family>
+                 <pointsize>9</pointsize>
                 </font>
                </property>
                <property name="styleSheet">
@@ -246,6 +243,24 @@ border-style: solid;
 border-color: rgb(149, 149, 149);
 border-width: 2px;
 border-radius: 6px;</string>
+               </property>
+               <property name="wrapping">
+                <bool>false</bool>
+               </property>
+               <property name="frame">
+                <bool>true</bool>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="keyboardTracking">
+                <bool>true</bool>
+               </property>
+               <property name="showGroupSeparator" stdset="0">
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -271,28 +286,23 @@ border-radius: 6px;</string>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="floorTextEditEnd">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+              <widget class="QSpinBox" name="floorTextEditEnd">
                <property name="minimumSize">
                 <size>
-                 <width>120</width>
-                 <height>0</height>
+                 <width>80</width>
+                 <height>20</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>120</width>
+                 <width>16777215</width>
                  <height>20</height>
                 </size>
                </property>
                <property name="font">
                 <font>
-                 <family>jf open 粉圓 1.1</family>
+                 <family>微軟正黑體</family>
+                 <pointsize>9</pointsize>
                 </font>
                </property>
                <property name="styleSheet">
@@ -301,6 +311,27 @@ border-style: solid;
 border-color: rgb(149, 149, 149);
 border-width: 2px;
 border-radius: 6px;</string>
+               </property>
+               <property name="wrapping">
+                <bool>false</bool>
+               </property>
+               <property name="frame">
+                <bool>true</bool>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="keyboardTracking">
+                <bool>true</bool>
+               </property>
+               <property name="showGroupSeparator" stdset="0">
+                <bool>false</bool>
+               </property>
+               <property name="maximum">
+                <number>487630000</number>
                </property>
               </widget>
              </item>
