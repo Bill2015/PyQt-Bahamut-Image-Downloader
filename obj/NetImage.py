@@ -36,14 +36,24 @@ class NetImageBuilder:
         return NetImage( authorID=self.id, authorName=self.name, floor=self.floor, gp=self.gp, bp=self.bp, imageUrl=self.url )
 
 class NetImage:
+    _EXTENSION_LIST = [".jpg", ".JPG", ".PNG",".png", ".gif", ".GIF", ".jfif", ".JFIF", ".apng", ".APNG"]
     #=============================================================================================================
     def __init__( self, authorID:str, authorName:str, floor:int, gp:int, bp:int, imageUrl:str ):
-        self._authorID   = authorID
-        self._authorName = authorName
-        self._floor      = floor
-        self._gp         = gp 
-        self._bp         = bp
-        self._imageUrl   = imageUrl
+        self._authorID:str   = authorID
+        self._authorName:str = authorName
+        self._floor:int      = floor
+        self._gp:int         = gp 
+        self._bp:int         = bp
+        self._imageUrl:str   = imageUrl
+        self._imageData:bytearray = None
+        self._extension:str  = self._getExtensionOfUrl()
+
+    def _getExtensionOfUrl( self ):
+        """ get the type of image extension """
+        for ext in NetImage._EXTENSION_LIST:
+            if( self._imageUrl.endswith( ext ) ):
+                return ext
+        return ".txt"
 
     def print( self ):
         """print this article all of infomation"""
@@ -73,8 +83,15 @@ class NetImage:
     def getImageUrl(self) -> str:
         return self._imageUrl
 
+    def getExtension( self ) -> str:
+        return self._extension
+
+    def getData( self ) -> bytes:
+        return self._imageData
+
     def setImageData(self, data: bytes):
         self._imageData = data
+
 
     @staticmethod
     def getBuilder():

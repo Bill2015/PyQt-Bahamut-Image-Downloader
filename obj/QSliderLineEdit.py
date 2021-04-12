@@ -38,6 +38,10 @@ class QSliderLineEdit():
     def value( self ) -> int:
         """get now value of slider"""
         return self._slider.value()
+
+    def setValue( self, val ):
+        """setting slider value"""
+        self._slider.setValue( val )
     
     def getSlider( self ) -> QSlider:
         return self._slider

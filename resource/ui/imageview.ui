@@ -2,23 +2,38 @@
 <ui version="4.0">
  <class>Form</class>
  <widget class="QWidget" name="Form">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>256</width>
+    <width>283</width>
     <height>384</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+   <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>256</width>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>384</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>0</width>
     <height>384</height>
    </size>
   </property>
@@ -31,16 +46,25 @@
   <layout class="QHBoxLayout" name="horizontalLayout_4">
    <item>
     <widget class="QWidget" name="imageWidget" native="true">
+     <property name="baseSize">
+      <size>
+       <width>384</width>
+       <height>256</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:none</string>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="sizeConstraint">
-         <enum>QLayout::SetMaximumSize</enum>
+         <enum>QLayout::SetNoConstraint</enum>
         </property>
         <item>
          <widget class="QLabel" name="authorNameLabel">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -60,7 +84,8 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(226, 226, 226)</string>
+           <string notr="true">color:rgb(226, 226, 226);
+border-style: none;</string>
           </property>
           <property name="text">
            <string>樓主ID</string>
@@ -84,32 +109,22 @@
          </spacer>
         </item>
         <item>
-         <widget class="QLabel" name="deleteLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>40</height>
-           </size>
-          </property>
+         <widget class="QPushButton" name="deleteButton">
           <property name="font">
            <font>
             <family>微軟正黑體</family>
-            <pointsize>10</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
+            <pointsize>14</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:red</string>
+           <string notr="true">color:red;
+background-color:none;
+border:none</string>
           </property>
           <property name="text">
-           <string>刪除</string>
+           <string>✕</string>
           </property>
          </widget>
         </item>
@@ -118,12 +133,12 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <property name="sizeConstraint">
-         <enum>QLayout::SetFixedSize</enum>
+         <enum>QLayout::SetNoConstraint</enum>
         </property>
         <item>
          <widget class="QLabel" name="authorIDLabel">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -143,7 +158,8 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(0, 176, 216)</string>
+           <string notr="true">color:rgb(0, 176, 216);
+border:none</string>
           </property>
           <property name="text">
            <string>(Bill2015)</string>
@@ -166,7 +182,7 @@
         <item>
          <widget class="QLabel" name="floorLabel">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -186,7 +202,8 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(226, 226, 226)</string>
+           <string notr="true">color:rgb(226, 226, 226);
+border:none</string>
           </property>
           <property name="text">
            <string>20</string>
@@ -196,7 +213,7 @@
         <item>
          <widget class="QLabel" name="floorDisplayLabel">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -216,7 +233,8 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(226, 226, 226)</string>
+           <string notr="true">color:rgb(226, 226, 226);
+border:none;</string>
           </property>
           <property name="text">
            <string>樓</string>
@@ -290,7 +308,8 @@
           </property>
           <property name="styleSheet">
            <string notr="true">background-color:rgb(91, 91, 91);
-color:rgb(231, 231, 231)</string>
+color:rgb(231, 231, 231);
+border:none;</string>
           </property>
           <property name="text">
            <string/>
@@ -340,13 +359,13 @@ color:rgb(231, 231, 231)</string>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <property name="sizeConstraint">
-         <enum>QLayout::SetFixedSize</enum>
+         <enum>QLayout::SetNoConstraint</enum>
         </property>
         <item>
          <widget class="QLabel" name="gpDisplayLabel">
           <property name="minimumSize">
            <size>
-            <width>30</width>
+            <width>0</width>
             <height>0</height>
            </size>
           </property>
@@ -365,7 +384,8 @@ color:rgb(231, 231, 231)</string>
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(255, 213, 1)</string>
+           <string notr="true">color:rgb(255, 213, 1);
+border:none;</string>
           </property>
           <property name="text">
            <string>推:</string>
@@ -389,7 +409,8 @@ color:rgb(231, 231, 231)</string>
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(255, 213, 1)</string>
+           <string notr="true">color:rgb(255, 213, 1);
+border:none;</string>
           </property>
           <property name="text">
            <string>185</string>
@@ -416,7 +437,7 @@ color:rgb(231, 231, 231)</string>
          <widget class="QLabel" name="bpDisplayLabel">
           <property name="minimumSize">
            <size>
-            <width>30</width>
+            <width>0</width>
             <height>0</height>
            </size>
           </property>
@@ -435,7 +456,8 @@ color:rgb(231, 231, 231)</string>
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(144, 197, 226)</string>
+           <string notr="true">color:rgb(144, 197, 226);
+border:none;</string>
           </property>
           <property name="text">
            <string>噓:</string>
@@ -453,7 +475,8 @@ color:rgb(231, 231, 231)</string>
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color:rgb(144, 197, 226)</string>
+           <string notr="true">color:rgb(144, 197, 226);
+border:none;</string>
           </property>
           <property name="text">
            <string>16</string>
