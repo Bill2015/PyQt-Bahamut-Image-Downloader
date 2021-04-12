@@ -1,6 +1,7 @@
 
 class NetImageBuilder:
     def __init__( self ):
+        self._imageData = None
         pass
     
     def setAuthor( self, id, name ):
@@ -36,7 +37,7 @@ class NetImageBuilder:
 
 class NetImage:
     #=============================================================================================================
-    def __init__( self, authorID, authorName, floor, gp, bp, imageUrl ):
+    def __init__( self, authorID:str, authorName:str, floor:int, gp:int, bp:int, imageUrl:str ):
         self._authorID   = authorID
         self._authorName = authorName
         self._floor      = floor
@@ -49,28 +50,31 @@ class NetImage:
         print( "authorID:", self._authorID, "   authorName:", self._authorName, "  floor:", self._floor, "   GP:", self._gp, "   BP:", self._bp  )
         print(  self._imageUrl, "\n" )
 
-    def toString( self ):
+    def toString( self ) -> str:
         """print this article all of infomation"""
         return "".join( ["authorID:", self._authorID, "   authorName:", self._authorName, "  floor:",  str(self._floor), "   GP:", str(self._gp), "   BP:", str(self._bp), "\n",  self._imageUrl, "\n\n"] ).encode("utf8")
 
-    def getAuthorName(self):
+    def getAuthorName(self) -> str:
         """get author name"""
         return self._authorName
     
-    def getAuthorID(self):
+    def getAuthorID(self) -> str:
         return self._authorID
 
-    def getFloor(self):
+    def getFloor(self) -> int:
         return self._floor
     
-    def getGP(self):
+    def getGP(self) -> int:
         return self._gp
 
-    def getBP(self):
+    def getBP(self) -> int:
         return self._bp
 
-    def getImageUrl(self):
+    def getImageUrl(self) -> str:
         return self._imageUrl
+
+    def setImageData(self, data: bytes):
+        self._imageData = data
 
     @staticmethod
     def getBuilder():

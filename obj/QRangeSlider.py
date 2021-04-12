@@ -113,7 +113,7 @@ class Ui_Form(object):
         self.gridLayout.setSpacing(0)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self._splitter = QSplitter(Form)
-        self._splitter.setMinimumSize(QtCore.QSize(512, 40))
+        self._splitter.setMinimumSize(QtCore.QSize(128, 40))
         self._splitter.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self._splitter.setOrientation(QtCore.Qt.Horizontal)
         self._splitter.setObjectName(_fromUtf8("splitter"))

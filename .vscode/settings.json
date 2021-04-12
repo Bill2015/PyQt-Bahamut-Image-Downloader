@@ -27,6 +27,12 @@
                 "settings": {
                     "foreground": "#428f1f",
                 }
+            },
+            {
+                "scope": "variable.parameter.function.language.special.self.python",
+                "settings": {
+                    "foreground": "#2a51ff",
+                }
             }
             
         ]
@@ -46,5 +52,9 @@
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "D:/ProgramPackage/Anaconda/envs/application/**",
+        "D:/ProgramPackage/Anaconda/envs/application/include/**"
+    ],
     
 }

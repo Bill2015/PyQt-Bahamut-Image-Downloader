@@ -1,8 +1,9 @@
 
+from obj.NetImage import NetImage
 from PyQt5              import QtWidgets, uic
-from PyQt5.QtWidgets    import (QLabel) 
+from PyQt5.QtWidgets    import (QLabel, QWidget) 
 from PyQt5.QtGui        import (QImage, QPixmap)
-from PyQt5.QtCore       import Qt, QRunnable
+from PyQt5.QtCore       import QByteArray, QPropertyAnimation, QSize, Qt, QRunnable
 
 import os as OS
 # Get Image Form URL
@@ -39,35 +40,43 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         uiImageWidget.__init__(self)
         self.setupUi(self)
 
-        self.authorNameLabel    = self.findChild(QLabel, name='authorNameLabel')    # label of author
-        self.authorIDLabel      = self.findChild(QLabel, name='authorIDLabel')      # label of author ID
-        self.floorLabel         = self.findChild(QLabel, name='floorLabel')         # label of floor
-        self.GPLabel            = self.findChild(QLabel, name='gpLabel')            # label of GP
-        self.BPLabel            = self.findChild(QLabel, name='bpLabel')            # label of BP
+        self._authorNameLabel    = self.findChild(QLabel, name='authorNameLabel')    # label of author
+        self._authorIDLabel      = self.findChild(QLabel, name='authorIDLabel')      # label of author ID
+        self._floorLabel         = self.findChild(QLabel, name='floorLabel')         # label of floor
+        self._GPLabel            = self.findChild(QLabel, name='gpLabel')            # label of GP
+        self._BPLabel            = self.findChild(QLabel, name='bpLabel')            # label of BP
 
-        self.authorNameLabel.setText( netImage.getAuthorName() )
-        self.authorIDLabel.setText(   netImage.getAuthorID() )
-        self.floorLabel.setText( str( netImage.getFloor() ) )
-        self.GPLabel.setText(    str( netImage.getGP() ) )
-        self.BPLabel.setText(    str( netImage.getBP() ) )
+        self._authorNameLabel.setText( netImage.getAuthorName() )
+        self._authorIDLabel.setText(   netImage.getAuthorID() )
+        self._floorLabel.setText( str( netImage.getFloor() ) )
+        self._GPLabel.setText(    str( netImage.getGP() ) )
+        self._BPLabel.setText(    str( netImage.getBP() ) )
         # -------------------------------------------------------------------
-        self.imageLabel        = self.findChild(QLabel, name='imageLabel')          # showImageLabel
-        self.url               = netImage.getImageUrl()
+        self._imageLabel:QLabel = self.findChild(QLabel, name='imageLabel')          # showImageLabel
+        self._url:str           = netImage.getImageUrl()
         # -------------------------------------------------------------------
-        self.netImage          = netImage
+        self._netImage:NetImage = netImage
+        self._isLoaded:bool     = False
+        self._imageLoaderThread = self.ImageLoaderThread( self )
 
-        self.imageLoaderThread = self.ImageLoaderThread( self )
+    def getImage( self ) -> NetImage:
+        return self._netImage
 
-    def getImage( self ):
-        return self.netImage
-
-    def getImageLoaderThread(self):
+    def getImageLoaderThread(self) -> ImageLoaderThread:
         """use to put in a thread pool to loading images"""
-        return self.imageLoaderThread
+        return self._imageLoaderThread
+
+    def isLoaded( self ) -> bool:
+        """ get the image is loaded"""
+        return self._isLoaded
+
+    def setIsLoaded( self, flag:bool ):
+        """set the flag image are loaded"""
+        self._isLoaded = flag 
 
     def loadingImage(self):
         """ loading image from web"""
-        data    = URL_REQUEST.urlopen( self.url ).read()
+        data    = URL_REQUEST.urlopen( self._url ).read()
         
         image = QImage()
         if( image.loadFromData( data ) == False ):
@@ -78,3 +87,19 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
             pixmap      = QPixmap( image ).scaled( int(image.width() / scaleRate), int(image.height() / scaleRate), Qt.IgnoreAspectRatio,  Qt.SmoothTransformation)
             self.imageLabel.setPixmap( pixmap )
 
+    def test( self ):
+
+
+        formerSize = QSize( self.size() ) # storing previous geometry in order to be able to restore it later
+
+        self.hideAnimation = QPropertyAnimation( self, QByteArray().append( "size" ) )
+        self.hideAnimation.setDuration( 500 ) # chose the value that fits you
+        self.hideAnimation.setStartValue( formerSize )
+        # computing final geometry
+        # endTopLeftCorner = QPoint( self.pos() + QPoint( 0, self.height() ) )
+        finalSize = QSize( 0, 0 )
+        self.hideAnimation.setEndValue( finalSize )
+
+        self.hideAnimation.start()
+        
+        

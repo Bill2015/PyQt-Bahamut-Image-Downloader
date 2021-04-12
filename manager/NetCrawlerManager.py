@@ -1,6 +1,9 @@
 # Web Crewler
 import urllib.request as URL_REQUEST
+import urllib.error   as URL_ERROR
 import math as MATH
+
+from typing import List, Union
 from bs4 import BeautifulSoup
 
 from obj.NetImage import NetImage
@@ -9,17 +12,15 @@ from obj.ImageWidget import ImageWidget
 class NetCrawlerManager:
     MAX_FLOOR_PER_PAGE = 20 # acconding to bahamut page, each page have 20 floor
     def __init__(self):
-        self.netImageList = []
-        self.netImageWidgetList = []
+        self.netImageList: List[NetImage] = []
+        self.netImageWidgetList: List[ImageWidget] = []
         pass
 
     def _getScore( self, element ):
         """let score(str) convert to integer"""
         scoreStr = element.select( "span" )[0].text
-        if scoreStr ==  "爆":
-            return 9999
-        elif scoreStr == "X":
-            return -9999
+        if scoreStr ==  "爆" or scoreStr == "X":
+            return 999
         elif scoreStr == "-":
             return 0
         else:
@@ -28,21 +29,34 @@ class NetCrawlerManager:
     def _getUrlData( self, url: str ):
         # example1 url: https://forum.gamer.com.tw/C.php?bsn=60076&snA=5993618&tnum=54
         # example2 url: https://forum.gamer.com.tw/C.php?page=2&bsn=60076&snA=5993618&tnum=54
-        url        = url.split( "bsn=" )[1]        # 60076&snA=5993618&tnum=54
-        
-        temp       = url.split( "&snA=" )
-        bsn        = temp[0]                       # 60076
-        url        = temp[1].split( "&tnum=" )    # 5993618&tnum=54
-        snA        = url[0]
-        maxFloor   = int( url[1] )
+        # example3 url: https://forum.gamer.com.tw/C.php?bsn=60076&snA=6243913&tnum=638&bPage=2
+        # example4 url: https://forum.gamer.com.tw/C.php?bsn=60076&snA=6267967
+        url        = url.replace("?", "&")
+        strArray   = url.split( "&" )
+        bsn = snA = maxFloor = ""
 
-        maxPage = MATH.ceil(maxFloor / self.MAX_FLOOR_PER_PAGE)
+        for string in strArray:
+            if string.find( "bsn" ) >= 0:
+                bsn = string.replace("bsn=", "")
+                
+            elif string.find( "snA" ) >= 0:
+                snA = string.replace("snA=", "")
+            
+            elif string.find( "tnum" ) >= 0:
+                maxFloor = string.replace("tnum=", "")
+
+        # check is url is vailded 
+        if( bsn == "" or snA == "" or maxFloor == "" ):
+            raise URL_ERROR.URLError()
+
+        # get the max page of this article
+        maxPage = MATH.ceil( int( maxFloor ) / self.MAX_FLOOR_PER_PAGE)
 
         print( "bsn:", bsn, "  snA:", snA, "  max floor:", maxFloor, "   max page:", maxPage )
 
-        return [bsn, snA, maxFloor, maxPage]
+        return [bsn, snA,  int( maxFloor ), maxPage]
         
-    def getData( self, url: str, floor=[1, 999999], outputDebugTxt=False ):
+    def getData( self, url: str, floor=[1, 999999], outputDebugTxt=False ) -> List[ImageWidget]:
         """ get the bahamut image"""
 
         # get the info of url
@@ -108,12 +122,12 @@ class NetCrawlerManager:
         # just verify web crawler are correct or not
         if( outputDebugTxt == True ):
             text_file = open("result.txt", "wb")
-            for netImage in netImageList:
+            for netImage in self.netImageList:
                 text_file.write( netImage.toString() )
             text_file.close()
 
 
-        return self.netImageList, self.netImageWidgetList
+        return self.netImageWidgetList
 
         
         

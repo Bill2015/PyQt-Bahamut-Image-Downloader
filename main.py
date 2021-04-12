@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QWidget, QScrollArea, QSpinBox)
+from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
@@ -16,6 +16,8 @@ import zipfile as ZIP
 
 from obj.FlowLayout             import FlowLayout
 from obj.QRangeSlider           import QRangeSlider
+from obj.QSliderLineEdit        import QSliderLineEdit
+from manager.DataManager        import DataManager
 from manager.ImageLoaderManager import ImageLoaderManager
 from manager.NetCrawlerManager  import NetCrawlerManager
 
@@ -32,7 +34,6 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 # Python的多重繼承 MainUi 繼承自兩個類別
 class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
             
-
     # =========================================================
     # ==================== UI main program ====================
     def __init__(self):
@@ -47,16 +48,18 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         # floor text
         self.floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditStart')]
 
+        # gp & bp slider
+        self.GpSliderEdit: QSliderLineEdit  = QSliderLineEdit( self.findChild(QSlider, name='gpSlider'),  self.findChild(QLineEdit, name='gpLineEdit'), "爆" )
+        self.BpSliderEdit: QSliderLineEdit  = QSliderLineEdit( self.findChild(QSlider, name='bpSlider'),  self.findChild(QLineEdit, name='bpLineEdit'), "X" )
+
         # initial Image flowLayout 
         self.flowLayout = FlowLayout()
         self.centerScrollArea.widget().setLayout( self.flowLayout )
 
-        silder = QRangeSlider()
-        silder.setMin(0)
-        silder.setMax(1000)
-        self.flowLayout.addWidget( silder )
-
+        # initial img loader manager
         self.imgLoaderManager = ImageLoaderManager( self.centerScrollArea )
+
+        self.dataManager      = DataManager()
 
         self.initialEvent()
 
@@ -83,24 +86,39 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         if( searchUrl == "" ):
             return
 
-        imageList, ImgWidgetList = NetCrawlerManager().getData( searchUrl, [1, 20] )
-        
-        self.imgLoaderManager.load( ImgWidgetList )
+        # try:
+        self.imgWidgetList = NetCrawlerManager().getData( searchUrl, [1, 20] )
+        self.imgLoaderManager.load( self.imgWidgetList )
+        self.dataManager.setImageList( self.imgWidgetList )
+        # Occuer an error
+        # except Exception as e: 
+        #    print( e )
+        #    print( "URL format error" )
+
+
+
 
         # create center image
 
        
-
-     
+    def filter( self ):
+        gpPoint = self.GpSliderEdit.value()
+        bpPoint = self.BpSliderEdit.value()
+        self.dataManager.showFilter( gp=gpPoint, bp=bpPoint )
+    
+            
 
     # inital all the event
-    def initialEvent(self):
+    def initialEvent( self ):
         self.searchButton.clicked.connect( self.pressSearch )
+        self.GpSliderEdit.initialEvent()
+        self.BpSliderEdit.initialEvent()
+        
+        self.GpSliderEdit.getSlider().valueChanged.connect( self.filter )
 
 
 
 
-            
 
 
 # =========================================================

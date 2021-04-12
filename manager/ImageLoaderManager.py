@@ -1,4 +1,6 @@
 
+from typing import List
+from obj.ImageWidget import ImageWidget
 from PyQt5.QtCore import (QThreadPool, QThread, QEventLoop, QTimer)
 
 class ImageLoaderManager():
@@ -7,13 +9,12 @@ class ImageLoaderManager():
         self._centerScrollArea  = centerScrollArea
         self._flowLayout        = centerScrollArea.widget().layout()
         self._threadPool        = QThreadPool()
-
+        self._imgWidgetList     = List[ImageWidget]
         self._centerScrollArea.verticalScrollBar().valueChanged.connect( self._loadImg )
         
     def load( self, imgList: list):
         """first loading"""
         self._imgWidgetList = imgList
-        self._notLoadList   = imgList
         if( len(self._imgWidgetList) > 0 ):
             i = 0
             for imgWidget in self._imgWidgetList:
@@ -21,7 +22,8 @@ class ImageLoaderManager():
 
                 # preload 10 img
                 if i < 10:
-                     self._work( imgWidget )
+                    self._work( imgWidget, True )
+                    i += 1
                
             return True
         else:
@@ -32,19 +34,21 @@ class ImageLoaderManager():
 
     def _loadImg( self ):
         """scroll bar loading event"""
-        for imgWidget in self._notLoadList:
-            self._work( imgWidget )
+        for imgWidget in self._imgWidgetList:
+            if( imgWidget.isLoaded() == False ):
+                self._work( imgWidget )
 
-    def _work(self, imgWidget):
+    def _work(self, imgWidget, forceLoad: bool = False):
         """let image loading resourse from web"""
-        if( self._isVisibleWidget( imgWidget ) ):
-            self._notLoadList.remove( imgWidget )
+        if( self._isVisibleWidget( imgWidget ) or forceLoad ):
+            imgWidget.setIsLoaded( True )
             imgThread = imgWidget.getImageLoaderThread()
 
-            self.delay( 250 )    # add a delay prevent too frequcy getting img
+            self._delay( 250 )    # add a delay prevent too frequcy getting img
             self._threadPool.start( imgThread )
+
     
-    def delay( self, ms: int ):
+    def _delay( self, ms: int ):
         """ single shot delay"""
         loop = QEventLoop()
         QTimer.singleShot( ms, lambda x=loop: x.quit() )
