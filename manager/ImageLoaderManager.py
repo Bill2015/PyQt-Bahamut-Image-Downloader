@@ -1,7 +1,7 @@
 
 from typing import List
 from obj.ImageWidget import ImageWidget
-from PyQt5.QtCore import (QThreadPool, QThread, QEventLoop, QTimer)
+from PyQt5.QtCore import (QThreadPool, QEventLoop, QTimer)
 
 class ImageLoaderManager():
 
@@ -38,7 +38,7 @@ class ImageLoaderManager():
             if( imgWidget.isLoaded() == False ):
                 self._work( imgWidget )
 
-    def _work(self, imgWidget, forceLoad: bool = False):
+    def _work(self, imgWidget: ImageWidget, forceLoad: bool = False):
         """let image loading resourse from web"""
         if( self._isVisibleWidget( imgWidget ) or forceLoad ):
             imgWidget.setIsLoaded( True )
@@ -47,7 +47,16 @@ class ImageLoaderManager():
             self._delay( 250 )    # add a delay prevent too frequcy getting img
             self._threadPool.start( imgThread )
 
-    
+    def loadRawData( self, imgWidget:ImageWidget ):
+        """ when user saving data, but image haven't load data"""
+        imgWidget.setIsLoaded( True )
+        imgThread = imgWidget.getImageLoaderThread()
+        self._delay( 250 )
+        self._threadPool.start( imgThread )
+
+    def getImageThreadPool( self ) -> QThreadPool:
+        return self._threadPool
+
     def _delay( self, ms: int ):
         """ single shot delay"""
         loop = QEventLoop()

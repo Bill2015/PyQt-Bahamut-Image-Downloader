@@ -1,3 +1,4 @@
+from manager.DataSaveManager import DataSaveManager
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import (QFileDialog, QLabel, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider)
 from PyQt5 import QtCore, QtGui
@@ -8,9 +9,7 @@ from PyQt5.QtCore import *
 # 原生 Python 程式
 import os           as OS
 import sys          as SYSTEM
-
-# Zip File
-import zipfile as ZIP
+import traceback    as TRACE
 
 
 from obj.FlowLayout             import FlowLayout
@@ -44,7 +43,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._resetButton:QPushButton        = self.findChild(QPushButton, name='resetButton')       # reset filter button
         self._downloadButton:QPushButton     = self.findChild(QPushButton, name='downloadButton')    # download button
         # floor text
-        self._floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditStart')]
+        self._floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditEnd')]
 
         # gp & bp slider
         self._GpSliderEdit: QSliderLineEdit  = QSliderLineEdit( self.findChild(QSlider, name='gpSlider'),  self.findChild(QLineEdit, name='gpLineEdit'), "爆" )
@@ -55,26 +54,20 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._flowLayout.setSpacing( 2 )
         self._centerScrollArea.widget().setLayout( self._flowLayout )
 
-        # initial img loader manager
-        self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )
-        # initial image data
-        self._dataManager      = DataManager()
+        
+        self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )   # initial img loader manager
+        self._dataManager      = DataManager()                                  # initial image data manager
+        self._dataSaveManager  = DataSaveManager(  self._imgLoaderManager )             # initial image save manager
 
         # initial warning messsage 
         self._warningBox       = WarningDialog( self )
 
         self._initialEvent()
 
-    # 初始化影片顯示區域
+    # ======================================================================
     def _pressSearch(self):
-        # # downloading image
-        # downloadUrl = 'https://www.mymypic.net/data/attachment/album/202103/30/134312jgtytf14jscepftu.gif'
-        # data2 = URL_REQUEST.urlopen( downloadUrl ).read()
-        # filePath = OS.getcwd() + OS.sep + "testImage.gif"
-        # with open( filePath, 'wb' ) as localFile:
-        #     localFile.write( data2 )
-
-
+        """ when search button press """
+        # get search text
         searchUrl = self._searchEditText.text()
 
         # Error Message check the url is legal
@@ -84,11 +77,12 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 
         imgWidgetList = []
         try:
-            imgWidgetList = NetCrawlerManager().getData( searchUrl, [1, 1] )
+            floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
+            imgWidgetList = NetCrawlerManager().getData( searchUrl, floor )
         # Occuer an error
         except Exception as e: 
             # Error Message
-            print( SYSTEM.exc_info()[2] )
+            TRACE.print_exc()
             self._warningBox.show( "URL 格式錯誤！" )
         else:
             if( len(imgWidgetList) > 0 ):
@@ -105,7 +99,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
                 self._warningBox.show( "沒有任何圖片可以讀取喔！" )
         
 
-    # ---------------------------------------------------------------
+    # ======================================================================
     def _downloadAsZip( self ):
         """ download whole images as a zip """
 
@@ -122,14 +116,10 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
             self._warningBox.show( "檔案名稱不可為空！" )
             return
 
-        # print( self._dataManager.getDataDictinoary() )
-        zipFile = ZIP.ZipFile( fileName, 'w' )
-        # writing data into zip file
-        dataDict = self._dataManager.getDataDictinoary()
-        for key in dataDict:
-            zipFile.writestr( dataDict[ key ][ DataManager.FLIE_NAME ], dataDict[ key ][ DataManager.DATA_NAME ] )
-        zipFile.close()
-    # ---------------------------------------------------------------
+        self._dataSaveManager.start( self._dataManager, fileName )
+
+ 
+    # ======================================================================
     def _resetFilterEvent( self ):
         """press reset button event"""
         self._GpSliderEdit.setValue( 0 )
@@ -140,7 +130,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
             if( imgWidget.isVisible() == False ):
                 imgWidget.setRemoved( False )   # restore the image that delete by user
                 imgWidget.showWidget()
-    # ---------------------------------------------------------------
+    # ======================================================================
     def _filterEvent( self ):
         """gp and bp filter event"""
         gpPoint = self._GpSliderEdit.value()

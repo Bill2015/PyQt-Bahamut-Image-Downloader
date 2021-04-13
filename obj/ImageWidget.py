@@ -6,6 +6,8 @@ from PyQt5.QtGui        import (QImage, QPixmap)
 from PyQt5.QtCore       import QByteArray, QPropertyAnimation, Qt, QRunnable, QPoint, QRect
 
 import os as OS
+import traceback    as TRACE
+
 # Get Image Form URL
 import urllib.request as URL_REQUEST
 import urllib.error
@@ -28,14 +30,15 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
                 self.imageWidget.loadingImage()
             except urllib.error.HTTPError:
                 print( 'HTTP Error' )
+                TRACE.print_exc()
                 self.imageWidget.getImage().print()
                 self.imageWidget.deleteLater()          # delete itself
                 self.imageWidget = None              
 
     # =========================================================================================================
-    MAX_IMAGE_SIZE = 324
-    MAX_WIDGET_HEIGHT_SIZE = 384
-
+    _MAX_IMAGE_SIZE = 324
+    _MAX_WIDGET_HEIGHT_SIZE = 384
+    _REQUEST_HEADER = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     def __init__(self, netImage):
         QtWidgets.QWidget.__init__(self)
         uiImageWidget.__init__(self)
@@ -71,7 +74,7 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         self._originPos:QPoint
         self._showAnimation = QPropertyAnimation( self, QByteArray().append( "geometry" ) )
         self._hideAnimation = QPropertyAnimation( self, QByteArray().append( "geometry" ) )
-        self.setMinimumHeight( ImageWidget.MAX_WIDGET_HEIGHT_SIZE )
+        self.setMinimumHeight( ImageWidget._MAX_WIDGET_HEIGHT_SIZE )
         self.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Fixed ) )
 
         # -------------------------------------------------------------------
@@ -109,14 +112,15 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
 
     def loadingImage(self):
         """ loading image from web"""
-        data    = URL_REQUEST.urlopen( self._url ).read()
+        imgRequest  = URL_REQUEST.Request( self._url, headers=self._REQUEST_HEADER )
+        data        = URL_REQUEST.urlopen( imgRequest ).read()
         
         image = QImage()
         if( image.loadFromData( data ) == False ):
             self.imageLabel.setText( "圖片讀取失敗！" )
         else:
             maxlen      = max( image.width(), image.height() )
-            scaleRate   = 1.0 if maxlen < self.MAX_IMAGE_SIZE else (float(maxlen) / self.MAX_IMAGE_SIZE)
+            scaleRate   = 1.0 if maxlen < self._MAX_IMAGE_SIZE else (float(maxlen) / self._MAX_IMAGE_SIZE)
             pixmap      = QPixmap( image ).scaled( int(image.width() / scaleRate), int(image.height() / scaleRate), Qt.IgnoreAspectRatio,  Qt.SmoothTransformation)
             self.imageLabel.setPixmap( pixmap )    
             self._netImage.setImageData( data ) # setting image byte data into NetImage    
@@ -124,7 +128,7 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
     def _fixedHeight( self ):
         """ fixed height to make animation more smooth """
         self._isVisiable = True
-        self.setMinimumHeight( ImageWidget.MAX_WIDGET_HEIGHT_SIZE )
+        self.setMinimumHeight( ImageWidget._MAX_WIDGET_HEIGHT_SIZE )
         self.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Fixed ) )
 
     def _pressRemoveButtonEvent( self ):
