@@ -43,6 +43,12 @@
             "color": "#ff03b8",
             "backgroundColor": "transparent",
             "overviewRulerColor": "#ff03b8"
+        },
+        {
+            "text": "Error Message",
+            "color": "#ff382a",
+            "backgroundColor": "transparent",
+            "overviewRulerColor": "#ff03b8"
         }
     ],
     "todohighlight.isEnable": true,

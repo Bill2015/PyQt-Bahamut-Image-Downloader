@@ -14,8 +14,8 @@ import zipfile as ZIP
 
 
 from obj.FlowLayout             import FlowLayout
-from obj.QRangeSlider           import QRangeSlider
 from obj.QSliderLineEdit        import QSliderLineEdit
+from obj.WarningDialog          import WarningDialog
 from manager.DataManager        import DataManager
 from manager.ImageLoaderManager import ImageLoaderManager
 from manager.NetCrawlerManager  import NetCrawlerManager
@@ -25,7 +25,7 @@ from manager.NetCrawlerManager  import NetCrawlerManager
 # 設計好的ui檔案路徑
 qtCreatorFile = OS.getcwd() + "\\".join( ["","resource", "ui", "mainwindow.ui"] ) 
 # 讀入用Qt Designer設計的GUI layout
-Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)   
+Ui_MainWindow, _ = uic.loadUiType(qtCreatorFile)   
 
 # Python的多重繼承 MainUi 繼承自兩個類別
 class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -57,8 +57,11 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # initial img loader manager
         self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )
-
+        # initial image data
         self._dataManager      = DataManager()
+
+        # initial warning messsage 
+        self._warningBox       = WarningDialog( self )
 
         self._initialEvent()
 
@@ -74,25 +77,50 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 
         searchUrl = self._searchEditText.text()
 
-        # check the url is legal
+        # Error Message check the url is legal
         if( searchUrl == "" ):
+            self._warningBox.show( "搜尋欄不可為空！" )
             return
 
+        imgWidgetList = []
         try:
             imgWidgetList = NetCrawlerManager().getData( searchUrl, [1, 1] )
-            self._imgLoaderManager.load( imgWidgetList )
-            self._dataManager.setImageList( imgWidgetList )
         # Occuer an error
         except Exception as e: 
-            print( e )
-            print( "URL format error" )
+            # Error Message
+            print( SYSTEM.exc_info()[2] )
+            self._warningBox.show( "URL 格式錯誤！" )
+        else:
+            if( len(imgWidgetList) > 0 ):
+                try:
+                    self._imgLoaderManager.load( imgWidgetList )
+                    self._dataManager.setImageList( imgWidgetList )
+                # Occuer an error
+                except Exception as e: 
+                    # Error Message image loading failed
+                    print( SYSTEM.exc_info()[2] )
+                    self._warningBox.show( "圖片讀取時發生錯誤！" )
+            else:
+                # Error Message no any images can't be loaded
+                self._warningBox.show( "沒有任何圖片可以讀取喔！" )
+        
 
     # ---------------------------------------------------------------
     def _downloadAsZip( self ):
         """ download whole images as a zip """
-        options = QFileDialog.Options()
+
+        # Error Message if there is no image can be downloaded
+        if( self._dataManager.isImageEmpty() == True ):
+            self._warningBox.show( "目前沒有任何一張圖可以下載喔！" )
+            return
+
+        options     = QFileDialog.Options()
         fileName, _ = QFileDialog.getSaveFileName(self,"壓縮檔下載","","Zip Files (*.zip)", options=options)
         
+        # Error Message file name can't not be null
+        if( fileName == "" ):
+            self._warningBox.show( "檔案名稱不可為空！" )
+            return
 
         # print( self._dataManager.getDataDictinoary() )
         zipFile = ZIP.ZipFile( fileName, 'w' )

@@ -19,7 +19,14 @@ class DataManager():
     def getImageList( self ) -> List[ImageWidget]:
         return self.imgWidgetList
 
+    def isImageEmpty( self ) -> int:
+        for imgWidget in self.imgWidgetList:
+            if( imgWidget.isVisible() == True and imgWidget.isRemoved() == False ):
+                return False
+        return True
+
     def getDataDictinoary( self ) -> dict:
+        """get the image data dictionary"""
         dataDict = {}
 
         serialNum = 1
