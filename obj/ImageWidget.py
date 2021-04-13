@@ -66,7 +66,7 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         self._netImage:NetImage = netImage
         self._isLoaded:bool     = False
         self._imageLoaderThread = self.ImageLoaderThread( self )
-
+        
         # -------------------------------------------------------------------
         # image showing & hiding
         self._isVisiable:bool   = True

@@ -3,7 +3,7 @@ import urllib.request as URL_REQUEST
 import urllib.error   as URL_ERROR
 import math as MATH
 
-from typing import List, Union
+from typing import List
 from bs4 import BeautifulSoup
 
 from obj.NetImage import NetImage

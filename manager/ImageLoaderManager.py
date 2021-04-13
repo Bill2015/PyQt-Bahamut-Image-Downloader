@@ -1,7 +1,7 @@
 
-from typing import List
-from obj.ImageWidget import ImageWidget
-from PyQt5.QtCore import (QThreadPool, QEventLoop, QTimer)
+from typing             import List
+from obj.ImageWidget    import ImageWidget
+from PyQt5.QtCore       import (QThreadPool, QEventLoop, QTimer)
 
 class ImageLoaderManager():
 
@@ -9,11 +9,13 @@ class ImageLoaderManager():
         self._centerScrollArea  = centerScrollArea
         self._flowLayout        = centerScrollArea.widget().layout()
         self._threadPool        = QThreadPool()
+        self._maxThread         = 10
+        self._threadPool.setMaxThreadCount( self._maxThread )
         self._imgWidgetList     = List[ImageWidget]
         self._centerScrollArea.verticalScrollBar().valueChanged.connect( self._loadImg )
         
-    def load( self, imgList: list):
-        """first loading"""
+    def load( self, imgList: list) -> bool:
+        """first loading, if no any can be load return False, otherwise return true"""
         self._imgWidgetList = imgList
         if( len(self._imgWidgetList) > 0 ):
             i = 0
@@ -42,6 +44,10 @@ class ImageLoaderManager():
         """let image loading resourse from web"""
         if( self._isVisibleWidget( imgWidget ) or forceLoad ):
             imgWidget.setIsLoaded( True )
+            # waiting threadpool have space to work
+            while( (self._maxThread - 2) <= self._threadPool.activeThreadCount() ):
+                self._delay( 250 )
+            
             imgThread = imgWidget.getImageLoaderThread()
 
             self._delay( 250 )    # add a delay prevent too frequcy getting img
@@ -50,8 +56,13 @@ class ImageLoaderManager():
     def loadRawData( self, imgWidget:ImageWidget ):
         """ when user saving data, but image haven't load data"""
         imgWidget.setIsLoaded( True )
+
+        # waiting threadpool have space to work
+        while( (self._maxThread - 2) <= self._threadPool.activeThreadCount() ):
+            self._delay( 250 )
+        
         imgThread = imgWidget.getImageLoaderThread()
-        self._delay( 250 )
+        self._delay( 250 )                      # add a delay prevent too frequcy getting img
         self._threadPool.start( imgThread )
 
     def getImageThreadPool( self ) -> QThreadPool:

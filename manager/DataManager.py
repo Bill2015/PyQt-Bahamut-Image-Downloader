@@ -1,12 +1,6 @@
 
-from manager.ImageLoaderManager import ImageLoaderManager
 from obj.ImageWidget import ImageWidget
-from obj.NetImage import NetImage
 from typing import List
-
-
-
-
 
 class DataManager():
     FLIE_NAME = "fileName"

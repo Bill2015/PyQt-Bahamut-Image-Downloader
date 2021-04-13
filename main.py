@@ -1,15 +1,15 @@
-from manager.DataSaveManager import DataSaveManager
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import (QFileDialog, QLabel, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider)
+from PyQt5.QtWidgets import (QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 
 
-# 原生 Python 程式
-import os           as OS
-import sys          as SYSTEM
-import traceback    as TRACE
+# origin python
+import os               as OS
+import sys              as SYSTEM
+# request
+import urllib.error     as URL_ERROR
 
 
 from obj.FlowLayout             import FlowLayout
@@ -18,6 +18,9 @@ from obj.WarningDialog          import WarningDialog
 from manager.DataManager        import DataManager
 from manager.ImageLoaderManager import ImageLoaderManager
 from manager.NetCrawlerManager  import NetCrawlerManager
+from manager.DataZipManager     import DataZipManager
+from manager.CrashLogManager    import CrashLogManager
+
 
 
 
@@ -57,7 +60,8 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )   # initial img loader manager
         self._dataManager      = DataManager()                                  # initial image data manager
-        self._dataSaveManager  = DataSaveManager(  self._imgLoaderManager )             # initial image save manager
+        self._dataZipManager   = DataZipManager(  self._imgLoaderManager )      # initial image save manager
+        self._crashManager     = CrashLogManager()
 
         # initial warning messsage 
         self._warningBox       = WarningDialog( self )
@@ -82,18 +86,20 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         # Occuer an error
         except Exception as e: 
             # Error Message
-            TRACE.print_exc()
-            self._warningBox.show( "URL 格式錯誤！" )
+            if( type( e ) == URL_ERROR.URLError ):
+                self._crashManager.writeCrashLog( str( e ) )
+            else:
+                self._warningBox.show( "URL 格式錯誤！" )    
         else:
-            if( len(imgWidgetList) > 0 ):
+            # check the loading is success or not
+            if( self._imgLoaderManager.load( imgWidgetList ) == False ):
                 try:
-                    self._imgLoaderManager.load( imgWidgetList )
                     self._dataManager.setImageList( imgWidgetList )
                 # Occuer an error
                 except Exception as e: 
                     # Error Message image loading failed
-                    print( SYSTEM.exc_info()[2] )
                     self._warningBox.show( "圖片讀取時發生錯誤！" )
+                    self._crashManager.writeCrashLog( str( e ) )
             else:
                 # Error Message no any images can't be loaded
                 self._warningBox.show( "沒有任何圖片可以讀取喔！" )
@@ -116,7 +122,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
             self._warningBox.show( "檔案名稱不可為空！" )
             return
 
-        self._dataSaveManager.start( self._dataManager, fileName )
+        self._dataZipManager.start( self._dataManager, fileName )
 
  
     # ======================================================================
