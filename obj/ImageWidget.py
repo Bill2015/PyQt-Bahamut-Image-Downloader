@@ -21,19 +21,22 @@ uiImageWidget, QtImgBaseClass = uic.loadUiType(qtImgCreatorFile)
 class ImageWidget(QtWidgets.QWidget, uiImageWidget):
 
     class ImageLoaderThread(QRunnable):
-        def __init__(self, imageWidget):
+        def __init__(self, imageWidget ):
             super(ImageWidget.ImageLoaderThread, self).__init__()
-            self.imageWidget = imageWidget
+            self._imageWidget: ImageWidget = imageWidget
+
 
         def run(self):
             try:
-                self.imageWidget.loadingImage()
+                self._imageWidget.loadRawData()
+                if( self._imageWidget.isLoadRawData() == False ):
+                    self._imageWidget.showImage()
             except urllib.error.HTTPError:
                 print( 'HTTP Error' )
                 TRACE.print_exc()
-                self.imageWidget.getImage().print()
-                self.imageWidget.deleteLater()          # delete itself
-                self.imageWidget = None              
+                self._imageWidget.getImage().print()
+                self._imageWidget.deleteLater()          # delete itself
+                self._imageWidget = None              
 
     # =========================================================================================================
     _MAX_IMAGE_SIZE = 324
@@ -63,17 +66,20 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         
         # -------------------------------------------------------------------
         # image loading
-        self._netImage:NetImage = netImage
-        self._isLoaded:bool     = False
-        self._imageLoaderThread = self.ImageLoaderThread( self )
-        
+        self._netImage:NetImage     = netImage
+        self._isLoaded:bool         = False
+        self._imageLoaderThread     = self.ImageLoaderThread( self )
+        self._isLoadRawData:bool    = False
+        self._imageData:bytearray   = None
+        self._imageShowing:bool      = False
+
         # -------------------------------------------------------------------
         # image showing & hiding
-        self._isVisiable:bool   = True
-        self._originGeometry:QRect
-        self._originPos:QPoint
-        self._showAnimation = QPropertyAnimation( self, QByteArray().append( "geometry" ) )
-        self._hideAnimation = QPropertyAnimation( self, QByteArray().append( "geometry" ) )
+        self._isVisiable:bool       = True
+        self._originGeometry:QRect  = None
+        self._originPos:QPoint      = None
+        self._showAnimation         = QPropertyAnimation( self, QByteArray().append( "geometry" ) )
+        self._hideAnimation         = QPropertyAnimation( self, QByteArray().append( "geometry" ) )
         self.setMinimumHeight( ImageWidget._MAX_WIDGET_HEIGHT_SIZE )
         self.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Fixed ) )
 
@@ -91,6 +97,17 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         """use to put in a thread pool to loading images"""
         return self._imageLoaderThread
 
+    def getImageData( self ) -> bytearray:
+        return self._imageData
+
+    def isLoadRawData( self ):
+        """get load raw data flag"""
+        return self._isLoadRawData
+
+    def isImageShowing( self ):
+        """ get the image is showing in the label """
+        return self._imageShowing
+
     def isLoaded( self ) -> bool:
         """ get the image is loaded"""
         return self._isLoaded
@@ -98,6 +115,10 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
     def setIsLoaded( self, flag:bool ):
         """set the flag image are loaded"""
         self._isLoaded = flag 
+
+    def setLoadRawData( self, flag:bool ):
+        """set load raw data"""
+        self._isLoadRawData = flag
 
     def isVisible(self) -> bool:
         return self._isVisiable
@@ -110,20 +131,22 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         """ setting isRemoved flag """
         self._isRemoved = flag
 
-    def loadingImage(self):
+    def loadRawData( self ):
+        """ load raw Data """
+        imgRequest          = URL_REQUEST.Request( self._url, headers=self._REQUEST_HEADER )
+        self._imageData     = URL_REQUEST.urlopen( imgRequest ).read()
+
+    def showImage( self ):
         """ loading image from web"""
-        imgRequest  = URL_REQUEST.Request( self._url, headers=self._REQUEST_HEADER )
-        data        = URL_REQUEST.urlopen( imgRequest ).read()
-        
+        self._imageShowing = True
         image = QImage()
-        if( image.loadFromData( data ) == False ):
+        if( image.loadFromData( self._imageData ) == False ):
             self.imageLabel.setText( "圖片讀取失敗！" )
         else:
             maxlen      = max( image.width(), image.height() )
             scaleRate   = 1.0 if maxlen < self._MAX_IMAGE_SIZE else (float(maxlen) / self._MAX_IMAGE_SIZE)
             pixmap      = QPixmap( image ).scaled( int(image.width() / scaleRate), int(image.height() / scaleRate), Qt.IgnoreAspectRatio,  Qt.SmoothTransformation)
             self.imageLabel.setPixmap( pixmap )    
-            self._netImage.setImageData( data ) # setting image byte data into NetImage    
 
     def _fixedHeight( self ):
         """ fixed height to make animation more smooth """

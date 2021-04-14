@@ -20,4 +20,10 @@ class DataManager():
                 return False
         return True
 
+    def countData( self ) -> int:
+        count = 0
+        for imgWidget in self.imgWidgetList:
+            if( imgWidget.isVisible() == True and imgWidget.isRemoved() == False ):
+                count += 1
+        return count
 

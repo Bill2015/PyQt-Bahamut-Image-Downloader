@@ -45,7 +45,6 @@ class NetImage:
         self._gp:int         = gp 
         self._bp:int         = bp
         self._imageUrl:str   = imageUrl
-        self._imageData:bytearray = None
         self._extension:str  = self._getExtensionOfUrl()
 
     def _getExtensionOfUrl( self ):
@@ -86,11 +85,6 @@ class NetImage:
     def getExtension( self ) -> str:
         return self._extension
 
-    def getData( self ) -> bytes:
-        return self._imageData
-
-    def setImageData(self, data: bytes):
-        self._imageData = data
 
 
     @staticmethod

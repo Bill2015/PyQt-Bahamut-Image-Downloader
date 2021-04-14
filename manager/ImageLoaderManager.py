@@ -13,11 +13,12 @@ class ImageLoaderManager():
         self._threadPool.setMaxThreadCount( self._maxThread )
         self._imgWidgetList     = List[ImageWidget]
         self._centerScrollArea.verticalScrollBar().valueChanged.connect( self._loadImg )
+
         
     def load( self, imgList: list) -> bool:
         """first loading, if no any can be load return False, otherwise return true"""
         self._imgWidgetList = imgList
-        if( len(self._imgWidgetList) > 0 ):
+        if( len( self._imgWidgetList ) > 0 ):
             i = 0
             for imgWidget in self._imgWidgetList:
                 self._flowLayout.addWidget( imgWidget ) 
@@ -32,13 +33,15 @@ class ImageLoaderManager():
             print( 'No images can load！' )
             return False
 
-        
 
     def _loadImg( self ):
         """scroll bar loading event"""
         for imgWidget in self._imgWidgetList:
             if( imgWidget.isLoaded() == False ):
                 self._work( imgWidget )
+            else:
+                if( imgWidget.isImageShowing() == False and imgWidget.isLoadRawData() == True ):
+                    imgWidget.showImage()
 
     def _work(self, imgWidget: ImageWidget, forceLoad: bool = False):
         """let image loading resourse from web"""
@@ -56,6 +59,7 @@ class ImageLoaderManager():
     def loadRawData( self, imgWidget:ImageWidget ):
         """ when user saving data, but image haven't load data"""
         imgWidget.setIsLoaded( True )
+        imgWidget.setLoadRawData( True )
 
         # waiting threadpool have space to work
         while( (self._maxThread - 2) <= self._threadPool.activeThreadCount() ):
@@ -64,6 +68,7 @@ class ImageLoaderManager():
         imgThread = imgWidget.getImageLoaderThread()
         self._delay( 250 )                      # add a delay prevent too frequcy getting img
         self._threadPool.start( imgThread )
+
 
     def getImageThreadPool( self ) -> QThreadPool:
         return self._threadPool

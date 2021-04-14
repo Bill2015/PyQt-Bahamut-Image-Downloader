@@ -1,5 +1,6 @@
+from obj.ProgressWidget import ProgressWidget
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import (QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider)
+from PyQt5.QtWidgets import (QFileDialog, QLabel, QLineEdit, QProgressBar, QPushButton, QScrollArea, QSpinBox, QSlider)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
@@ -39,12 +40,13 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
 
-        # 取得內部物件
+        # getting inner object
         self._searchButton:QPushButton       = self.findChild(QPushButton, name='searchButton')      # 搜尋按鈕
         self._searchEditText:QLineEdit       = self.findChild(QLineEdit, name='searchTextEdit')      # search text
         self._centerScrollArea:QScrollArea   = self.findChild(QScrollArea, name='centerScrollArea')  # center scroll area
         self._resetButton:QPushButton        = self.findChild(QPushButton, name='resetButton')       # reset filter button
         self._downloadButton:QPushButton     = self.findChild(QPushButton, name='downloadButton')    # download button
+        
         # floor text
         self._floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditEnd')]
 
@@ -57,10 +59,14 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._flowLayout.setSpacing( 2 )
         self._centerScrollArea.widget().setLayout( self._flowLayout )
 
+        # initial progress bar
+        self._progressWidget   = ProgressWidget(self.findChild(QLabel, name='progressLabel'), self.findChild(QProgressBar, name='progressBar') )
+
         
         self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )   # initial img loader manager
         self._dataManager      = DataManager()                                  # initial image data manager
-        self._dataZipManager   = DataZipManager(  self._imgLoaderManager )      # initial image save manager
+        self._dataZipManager   = DataZipManager(  self._imgLoaderManager, self._dataManager )      # initial image save manager
+        self._dataZipManager.getProgressSignal().connect( self._updateZipProgress )
         self._crashManager     = CrashLogManager()
 
         # initial warning messsage 
@@ -71,6 +77,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
     # ======================================================================
     def _pressSearch(self):
         """ when search button press """
+
         # get search text
         searchUrl = self._searchEditText.text()
 
@@ -92,7 +99,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
                 self._warningBox.show( "URL 格式錯誤！" )    
         else:
             # check the loading is success or not
-            if( self._imgLoaderManager.load( imgWidgetList ) == False ):
+            if( self._imgLoaderManager.load( imgWidgetList ) == True ):
                 try:
                     self._dataManager.setImageList( imgWidgetList )
                 # Occuer an error
@@ -122,9 +129,19 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
             self._warningBox.show( "檔案名稱不可為空！" )
             return
 
-        self._dataZipManager.start( self._dataManager, fileName )
+        self._dataZipManager.start( fileName )
+        
+    # ======================================================================
+    def _updateZipProgress( self, val:int, max:int, text:str, status:int=ProgressWidget.PROGRESS_WIDGET_NORML ):
+        """when zip image file, update progress"""
+        if( status == ProgressWidget.PROGRESS_WIDGET_SHOW ):
+            self._progressWidget.show()
+        elif( status == ProgressWidget.PROGRESS_WIDGET_HIDE ):
+            self._progressWidget.hide()
+        self._progressWidget.setMaxValue( max )
+        self._progressWidget.setValue( val )
+        self._progressWidget.setText( text )
 
- 
     # ======================================================================
     def _resetFilterEvent( self ):
         """press reset button event"""
