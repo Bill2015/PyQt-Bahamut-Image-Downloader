@@ -17,7 +17,6 @@ class DataZipManager(QThread):
         self._imgLoaderManager          = imgLoaderManager
         self._dataManager               = dataManager
         self._fileName                   = "default"
-
     
     def start(self, fileName:str="default") -> None:
         self._fileName    = fileName

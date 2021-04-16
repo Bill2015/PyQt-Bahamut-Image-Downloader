@@ -1,16 +1,36 @@
+from PyQt5              import uic
+from PyQt5.QtWidgets    import QLabel, QProgressBar, QPushButton, QSizePolicy, QSpacerItem, QWidget
 
-from PyQt5.QtWidgets import QLabel, QProgressBar
+import os as OS
 
+# 設計好的ui檔案路徑
+qtCreatorFile = OS.getcwd() + "\\".join( ["","resource", "ui", "downloadWidget.ui"] ) 
+# 讀入用Qt Designer設計的GUI layout
+downloadWidgetUI, _ = uic.loadUiType(qtCreatorFile)   
 
-class ProgressWidget():
+class ProgressWidget(QWidget, downloadWidgetUI):
     PROGRESS_WIDGET_SHOW = 0
     PROGRESS_WIDGET_HIDE = 1
     PROGRESS_WIDGET_NORML = 2
 
-    def __init__(self, label:QLabel, progress:QProgressBar) -> None:
-        self._label         = label
-        self._progress      = progress
+    def __init__(self) -> None:
+        QWidget.__init__( self )
+        downloadWidgetUI.__init__( self )
+        self.setupUi( self )
+        # ----------------------------------------------------------
+        self._downloadBtn: QPushButton      = self.findChild(QPushButton, name='downloadButton')
+        self._label: QLabel                 = self.findChild(QLabel, name='progressLabel')
+        self._progress: QProgressBar        = self.findChild(QProgressBar, name='progressBar')
+        self._hSpacer: QSpacerItem          = QSpacerItem(0, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self._widget: QWidget               = self.findChild(QWidget, name='downloadWidget')
+        self._widget.layout().insertItem( 1, self._hSpacer )
+
+        self.hide()
+
     
+    def getDownloadButton( self ) -> QPushButton:
+        return self._downloadBtn
+
     def setText( self, text: str):
         """ set the showing text """
         self._label.setText( text )
@@ -34,14 +54,16 @@ class ProgressWidget():
         self._progress.setMinimum( value )
 
     def hide( self ):
-        """ show progress widget """
+        """ hide progress widget """
         self._label.hide()
         self._progress.hide()
+        self._hSpacer.changeSize( 0, 20, QSizePolicy.Expanding, QSizePolicy.Minimum )
     
     def show( self ):
         """ show progress widget """
         self._label.show()
         self._progress.show()
+        self._hSpacer.changeSize( 0, 20, QSizePolicy.Minimum, QSizePolicy.Minimum )
 
     def getProgressbar( self ) -> QProgressBar:
         """ get the progress bar """

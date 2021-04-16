@@ -86,3 +86,7 @@ class FlowLayout(QLayout):
             lineHeight = max(lineHeight, item.sizeHint().height())
 
         return y + lineHeight - rect.y()
+
+    def clearAllWidget( self ):
+        for i in reversed(range( self.layout().count())): 
+            self.layout().itemAt(i).widget().deleteLater()

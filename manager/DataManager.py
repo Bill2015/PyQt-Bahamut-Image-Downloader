@@ -6,23 +6,29 @@ class DataManager():
     FLIE_NAME = "fileName"
     DATA_NAME = "data"
     def __init__( self ) -> None:
-        self.imgWidgetList:List[ImageWidget] = []
+        self._imgWidgetList:List[ImageWidget] = []
+
+    def clearSearchData( self ):
+        self._imgWidgetList.clear()
+
+    def apendImageList( self, imgWidgetList:List[ImageWidget] ):
+        self._imgWidgetList = self._imgWidgetList + imgWidgetList
 
     def setImageList( self, imgWidgetList:List[ImageWidget] ):
-        self.imgWidgetList  = imgWidgetList
+        self._imgWidgetList  = imgWidgetList
 
     def getImageList( self ) -> List[ImageWidget]:
-        return self.imgWidgetList
+        return self._imgWidgetList
 
     def isImageEmpty( self ) -> int:
-        for imgWidget in self.imgWidgetList:
+        for imgWidget in self._imgWidgetList:
             if( imgWidget.isVisible() == True and imgWidget.isRemoved() == False ):
                 return False
         return True
 
     def countData( self ) -> int:
         count = 0
-        for imgWidget in self.imgWidgetList:
+        for imgWidget in self._imgWidgetList:
             if( imgWidget.isVisible() == True and imgWidget.isRemoved() == False ):
                 count += 1
         return count

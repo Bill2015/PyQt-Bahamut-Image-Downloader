@@ -1,6 +1,6 @@
 from obj.ProgressWidget import ProgressWidget
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import (QFileDialog, QLabel, QLineEdit, QProgressBar, QPushButton, QScrollArea, QSpinBox, QSlider)
+from PyQt5.QtWidgets import (QCheckBox, QFileDialog, QLabel, QLayout, QLineEdit, QProgressBar, QPushButton, QScrollArea, QSpinBox, QSlider, QVBoxLayout)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
@@ -44,8 +44,8 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._searchButton:QPushButton       = self.findChild(QPushButton, name='searchButton')      # 搜尋按鈕
         self._searchEditText:QLineEdit       = self.findChild(QLineEdit, name='searchTextEdit')      # search text
         self._centerScrollArea:QScrollArea   = self.findChild(QScrollArea, name='centerScrollArea')  # center scroll area
+        self._clearPreCheckBox:QCheckBox     = self.findChild(QCheckBox, name='clearPreSeachCheckBox') # clearPreSearch CheckBox
         self._resetButton:QPushButton        = self.findChild(QPushButton, name='resetButton')       # reset filter button
-        self._downloadButton:QPushButton     = self.findChild(QPushButton, name='downloadButton')    # download button
         
         # floor text
         self._floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditEnd')]
@@ -60,8 +60,8 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._centerScrollArea.widget().setLayout( self._flowLayout )
 
         # initial progress bar
-        self._progressWidget   = ProgressWidget(self.findChild(QLabel, name='progressLabel'), self.findChild(QProgressBar, name='progressBar') )
-
+        self._downloadWidget   = ProgressWidget()
+        self.findChild(QVBoxLayout, name='centerVerticalLayout').addWidget( self._downloadWidget )
         
         self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )   # initial img loader manager
         self._dataManager      = DataManager()                                  # initial image data manager
@@ -85,6 +85,12 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         if( searchUrl == "" ):
             self._warningBox.show( "搜尋欄不可為空！" )
             return
+        
+        # check the user is want to clear previous search result
+        clearPreSearch = self._clearPreCheckBox.isChecked() 
+        if( clearPreSearch == True ):
+            self._dataManager.clearSearchData()
+            self._flowLayout.clearAllWidget()
 
         imgWidgetList = []
         try:
@@ -101,7 +107,12 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
             # check the loading is success or not
             if( self._imgLoaderManager.load( imgWidgetList ) == True ):
                 try:
-                    self._dataManager.setImageList( imgWidgetList )
+                    if( clearPreSearch == True ):
+                        self._dataManager.setImageList( imgWidgetList )
+                    else:
+                        self._dataManager.apendImageList( imgWidgetList )
+                    # accoding GP and BP update image
+                    self._filterEvent()
                 # Occuer an error
                 except Exception as e: 
                     # Error Message image loading failed
@@ -135,12 +146,12 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
     def _updateZipProgress( self, val:int, max:int, text:str, status:int=ProgressWidget.PROGRESS_WIDGET_NORML ):
         """when zip image file, update progress"""
         if( status == ProgressWidget.PROGRESS_WIDGET_SHOW ):
-            self._progressWidget.show()
+            self._downloadWidget.show()
         elif( status == ProgressWidget.PROGRESS_WIDGET_HIDE ):
-            self._progressWidget.hide()
-        self._progressWidget.setMaxValue( max )
-        self._progressWidget.setValue( val )
-        self._progressWidget.setText( text )
+            self._downloadWidget.hide()
+        self._downloadWidget.setMaxValue( max )
+        self._downloadWidget.setValue( val )
+        self._downloadWidget.setText( text )
 
     # ======================================================================
     def _resetFilterEvent( self ):
@@ -169,8 +180,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
                     img.hideWidget()
             # make sure that widget is not visiable, and not remove by user
             elif( img.isVisible() == False and img.isRemoved() == False ):
-                img.showWidget()    
-            
+                img.showWidget()            
 
     def _initialEvent( self ):
         """inital all the event"""
@@ -182,7 +192,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self._resetButton.clicked.connect( self._resetFilterEvent )
 
-        self._downloadButton.clicked.connect( self._downloadAsZip )
+        self._downloadWidget.getDownloadButton().clicked.connect( self._downloadAsZip )
 
 
 
