@@ -1,9 +1,8 @@
 from obj.ProgressWidget import ProgressWidget
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import (QCheckBox, QFileDialog, QLabel, QLayout, QLineEdit, QProgressBar, QPushButton, QScrollArea, QSpinBox, QSlider, QVBoxLayout)
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtGui import *
-from PyQt5.QtCore import * 
+from PyQt5              import QtWidgets, uic
+from PyQt5.QtWidgets    import (QCheckBox, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider, QVBoxLayout)
+from PyQt5.QtGui        import *
+from PyQt5.QtCore       import * 
 
 
 # origin python
@@ -170,17 +169,25 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         gpPoint = self._GpSliderEdit.value()
         bpPoint = self._BpSliderEdit.value()
 
-        # check each image widget
-        for img in self._dataManager.getImageList():
-            netImage = img.getImage()
+        try:
+            self._imgLoaderManager.loadImg()
+            # check each image widget
+            for img in self._dataManager.getImageList():
+                # make sure the image is loaded successful
+                if( img.isLoadFailed() == False ):
+                    netImage = img.getImage()
 
-            # check gp and bp range
-            if netImage.getGP() < gpPoint or netImage.getBP() >= bpPoint:
-                if( img.isVisible() == True ):
-                    img.hideWidget()
-            # make sure that widget is not visiable, and not remove by user
-            elif( img.isVisible() == False and img.isRemoved() == False ):
-                img.showWidget()            
+                    # check gp and bp range
+                    if netImage.getGP() < gpPoint or netImage.getBP() >= bpPoint:
+                        if( img.isVisible() == True ):
+                            img.hideWidget()
+                    # make sure that widget is not visiable, and not remove by user
+                    elif( img.isVisible() == False and img.isRemoved() == False ):
+                        img.showWidget() 
+        # Error Message if exception happed       
+        except Exception as e:
+            if( type( e ) != TypeError ):
+                self._crashManager.writeCrashLog( str( e ) )
 
     def _initialEvent( self ):
         """inital all the event"""
@@ -208,4 +215,7 @@ if __name__ == "__main__":
         window.show()
         app.exec_()
 
-    run_app()
+    try:
+        run_app()
+    except Exception as e: 
+        print("main crashed. Error: %s", e)

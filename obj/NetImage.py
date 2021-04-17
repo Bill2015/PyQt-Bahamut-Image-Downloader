@@ -38,6 +38,7 @@ class NetImageBuilder:
 class NetImage:
     _EXTENSION_LIST = [".jpg", ".JPG", ".PNG",".png", ".gif", ".GIF", ".jfif", ".JFIF", ".apng", ".APNG"]
     #=============================================================================================================
+
     def __init__( self, authorID:str, authorName:str, floor:int, gp:int, bp:int, imageUrl:str ):
         self._authorID:str   = authorID
         self._authorName:str = authorName
@@ -46,6 +47,7 @@ class NetImage:
         self._bp:int         = bp
         self._imageUrl:str   = imageUrl
         self._extension:str  = self._getExtensionOfUrl()
+        self._isGIF:bool     = (self._extension == '.GIF' or self._extension == '.gif')
 
     def _getExtensionOfUrl( self ):
         """ get the type of image extension """
@@ -61,7 +63,7 @@ class NetImage:
 
     def toString( self ) -> str:
         """print this article all of infomation"""
-        return "".join( ["authorID:", self._authorID, "   authorName:", self._authorName, "  floor:",  str(self._floor), "   GP:", str(self._gp), "   BP:", str(self._bp), "\n",  self._imageUrl, "\n\n"] ).encode("utf8")
+        return "".join( ["authorID:", self._authorID, "   authorName:", self._authorName, "  floor:",  str(self._floor), "   GP:", str(self._gp), "   BP:", str(self._bp), "\n",  self._imageUrl, "\n\n"] )
 
     def getAuthorName(self) -> str:
         """get author name"""
@@ -84,6 +86,9 @@ class NetImage:
 
     def getExtension( self ) -> str:
         return self._extension
+
+    def isGif( self ) -> bool:
+        return self._isGIF
 
 
 

@@ -12,8 +12,7 @@ class ImageLoaderManager():
         self._maxThread         = 10
         self._threadPool.setMaxThreadCount( self._maxThread )
         self._imgWidgetList     = List[ImageWidget]
-        self._centerScrollArea.verticalScrollBar().valueChanged.connect( self._loadImg )
-
+        self._centerScrollArea.verticalScrollBar().valueChanged.connect( self.loadImg )
         
     def load( self, imgList: list) -> bool:
         """first loading, if no any can be load return False, otherwise return true"""
@@ -34,7 +33,7 @@ class ImageLoaderManager():
             return False
 
 
-    def _loadImg( self ):
+    def loadImg( self ):
         """scroll bar loading event"""
         for imgWidget in self._imgWidgetList:
             if( imgWidget.isLoaded() == False ):

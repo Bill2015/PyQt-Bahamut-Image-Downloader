@@ -94,9 +94,11 @@ class NetCrawlerManager:
 
                 # check floor, break if lower or exceed
                 nowFloor = int( article.select( ".floor" )[0][ "data-floor" ] )
-                if nowFloor < floor[0] or nowFloor > floor[1]:
+                if nowFloor < floor[0]:
+                    continue
+                elif nowFloor > floor[1]:
                     break
-
+                
                 # get this artcle infomation
                 authorID        = article.select( ".userid" )[0].text
                 authorName      = article.select( ".username" )[0].text

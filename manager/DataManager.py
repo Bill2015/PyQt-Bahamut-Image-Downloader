@@ -9,6 +9,10 @@ class DataManager():
         self._imgWidgetList:List[ImageWidget] = []
 
     def clearSearchData( self ):
+        for img in self._imgWidgetList:
+            if( img.isLoadFailed() == False ):
+                img.deleteLater()
+                del img
         self._imgWidgetList.clear()
 
     def apendImageList( self, imgWidgetList:List[ImageWidget] ):

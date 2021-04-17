@@ -2,8 +2,8 @@
 from obj.NetImage       import NetImage
 from PyQt5              import QtWidgets, uic
 from PyQt5.QtWidgets    import (QLabel, QPushButton, QSizePolicy) 
-from PyQt5.QtGui        import (QImage, QPixmap)
-from PyQt5.QtCore       import QByteArray, QPropertyAnimation, Qt, QRunnable, QPoint, QRect
+from PyQt5.QtGui        import (QImage, QMovie, QPixmap)
+from PyQt5.QtCore       import QBuffer, QByteArray, QIODevice, QObject, QPropertyAnimation, Qt, QRunnable, QPoint, QRect, pyqtSignal
 
 import os as OS
 import traceback    as TRACE
@@ -19,7 +19,6 @@ uiImageWidget, QtImgBaseClass = uic.loadUiType(qtImgCreatorFile)
 
 
 class ImageWidget(QtWidgets.QWidget, uiImageWidget):
-
     class ImageLoaderThread(QRunnable):
         def __init__(self, imageWidget ):
             super(ImageWidget.ImageLoaderThread, self).__init__()
@@ -28,12 +27,15 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
 
         def run(self):
             try:
-                self._imageWidget.loadRawData()
-                if( self._imageWidget.isLoadRawData() == False ):
-                    self._imageWidget.showImage()
+                if( self._imageWidget != None  ):
+                    self._imageWidget.loadRawData()
+                    if( self._imageWidget.isLoadRawData() == False ):
+                        if( self._imageWidget._showImgSignal != None ):
+                            self._imageWidget._showImgSignal.emit()
             except urllib.error.HTTPError:
                 print( 'HTTP Error' )
                 TRACE.print_exc()
+                self._imageWidget.setIsLoadFailed( True )
                 self._imageWidget.getImage().print()
                 self._imageWidget.deleteLater()          # delete itself
                 self._imageWidget = None              
@@ -42,6 +44,8 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
     _MAX_IMAGE_SIZE = 324
     _MAX_WIDGET_HEIGHT_SIZE = 384
     _REQUEST_HEADER = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+    # a signal to let the thread call on it
+    _showImgSignal = pyqtSignal()
     def __init__(self, netImage):
         QtWidgets.QWidget.__init__(self)
         uiImageWidget.__init__(self)
@@ -59,19 +63,21 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         self._floorLabel.setText( str( netImage.getFloor() ) )
         self._GPLabel.setText(    str( netImage.getGP() ) )
         self._BPLabel.setText(    str( netImage.getBP() ) )
+    
         # -------------------------------------------------------------------
         # image netowrk 
         self._imageLabel:QLabel = self.findChild(QLabel, name='imageLabel')          # showImageLabel
-        self._url:str           = netImage.getImageUrl()
-        
+
         # -------------------------------------------------------------------
         # image loading
         self._netImage:NetImage     = netImage
         self._isLoaded:bool         = False
+        self._isLoadFailed:bool     = False
         self._imageLoaderThread     = self.ImageLoaderThread( self )
         self._isLoadRawData:bool    = False
         self._imageData:bytearray   = None
-        self._imageShowing:bool      = False
+        self._imageShowing:bool     = False
+        self._showImgSignal.connect( self.showImage )
 
         # -------------------------------------------------------------------
         # image showing & hiding
@@ -84,8 +90,14 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         self.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Fixed ) )
 
         # -------------------------------------------------------------------
+        # user remove image
         self._isRemoved         = False
         # -------------------------------------------------------------------
+        
+        # -------------------------------------------------------------------
+        self._buffer:QBuffer        = None
+        self._moive:QMovie          = None
+        self._qByte:QByteArray      = None
         # initial event
         self._initialEvent()
 
@@ -111,10 +123,19 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
     def isLoaded( self ) -> bool:
         """ get the image is loaded"""
         return self._isLoaded
+    
+    def isLoadFailed( self ) -> bool:
+        """ get the image is load Failed"""
+        return self._isLoadFailed    
 
     def setIsLoaded( self, flag:bool ):
         """set the flag image are loaded"""
         self._isLoaded = flag 
+
+    def setIsLoadFailed( self, flag:bool ):
+        """set the flag image are loaded Failed"""
+        self._isLoadFailed = flag 
+
 
     def setLoadRawData( self, flag:bool ):
         """set load raw data"""
@@ -133,20 +154,32 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
 
     def loadRawData( self ):
         """ load raw Data """
-        imgRequest          = URL_REQUEST.Request( self._url, headers=self._REQUEST_HEADER )
+        imgRequest          = URL_REQUEST.Request( self._netImage.getImageUrl(), headers=self._REQUEST_HEADER )
         self._imageData     = URL_REQUEST.urlopen( imgRequest ).read()
 
     def showImage( self ):
         """ loading image from web"""
         self._imageShowing = True
-        image = QImage()
-        if( image.loadFromData( self._imageData ) == False ):
-            self.imageLabel.setText( "圖片讀取失敗！" )
+        
+        if( self._netImage.isGif() ):
+            self._qByte     = QByteArray( self._imageData )
+            self._buffer    = QBuffer( self._qByte )
+            if( self._buffer.open( QIODevice.ReadOnly ) ):
+                self._moive = QMovie( self._buffer, b"GIF" )
+                self._moive.setDevice( self._buffer )
+                self._moive.setCacheMode( QMovie.CacheAll )
+                self._imageLabel.setMovie( self._moive )
+                self._moive.start()
+
         else:
-            maxlen      = max( image.width(), image.height() )
-            scaleRate   = 1.0 if maxlen < self._MAX_IMAGE_SIZE else (float(maxlen) / self._MAX_IMAGE_SIZE)
-            pixmap      = QPixmap( image ).scaled( int(image.width() / scaleRate), int(image.height() / scaleRate), Qt.IgnoreAspectRatio,  Qt.SmoothTransformation)
-            self.imageLabel.setPixmap( pixmap )    
+            image = QImage()
+            if( image.loadFromData( self._imageData ) == False ):
+                self._imageLabel.setText( "圖片讀取失敗！" )
+            else:
+                maxlen      = max( image.width(), image.height() )
+                scaleRate   = 1.0 if maxlen < self._MAX_IMAGE_SIZE else (float(maxlen) / self._MAX_IMAGE_SIZE)
+                pixmap      = QPixmap( image ).scaled( int(image.width() / scaleRate), int(image.height() / scaleRate), Qt.IgnoreAspectRatio,  Qt.SmoothTransformation)
+                self._imageLabel.setPixmap( pixmap )    
 
     def _fixedHeight( self ):
         """ fixed height to make animation more smooth """
