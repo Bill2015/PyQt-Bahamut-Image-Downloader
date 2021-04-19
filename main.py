@@ -1,6 +1,7 @@
+from obj.FilterWidget import FilterWidget
 from obj.ProgressWidget import ProgressWidget
 from PyQt5              import QtWidgets, uic
-from PyQt5.QtWidgets    import (QCheckBox, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider, QVBoxLayout)
+from PyQt5.QtWidgets    import (QCheckBox, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider, QVBoxLayout, QWidget)
 from PyQt5.QtGui        import *
 from PyQt5.QtCore       import * 
 
@@ -39,19 +40,19 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
 
+        # add Filter widget
+        self._filterWidget = FilterWidget()
+        self.findChild(QWidget, name='filterWidget').layout().addWidget(  self._filterWidget )
+        
+
         # getting inner object
         self._searchButton:QPushButton       = self.findChild(QPushButton, name='searchButton')      # 搜尋按鈕
         self._searchEditText:QLineEdit       = self.findChild(QLineEdit, name='searchTextEdit')      # search text
         self._centerScrollArea:QScrollArea   = self.findChild(QScrollArea, name='centerScrollArea')  # center scroll area
         self._clearPreCheckBox:QCheckBox     = self.findChild(QCheckBox, name='clearPreSeachCheckBox') # clearPreSearch CheckBox
-        self._resetButton:QPushButton        = self.findChild(QPushButton, name='resetButton')       # reset filter button
         
         # floor text
         self._floorEditText       = [self.findChild(QSpinBox, name='floorTextEditStart') ,self.findChild(QSpinBox, name='floorTextEditEnd')]
-
-        # gp & bp slider
-        self._GpSliderEdit: QSliderLineEdit  = QSliderLineEdit( self.findChild(QSlider, name='gpSlider'),  self.findChild(QLineEdit, name='gpLineEdit'), "爆" )
-        self._BpSliderEdit: QSliderLineEdit  = QSliderLineEdit( self.findChild(QSlider, name='bpSlider'),  self.findChild(QLineEdit, name='bpLineEdit'), "X" )
 
         # initial Image flowLayout 
         self._flowLayout = FlowLayout()
@@ -62,6 +63,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._downloadWidget   = ProgressWidget()
         self.findChild(QVBoxLayout, name='centerVerticalLayout').addWidget( self._downloadWidget )
         
+        # initial manager
         self._imgLoaderManager = ImageLoaderManager( self._centerScrollArea )   # initial img loader manager
         self._dataManager      = DataManager()                                  # initial image data manager
         self._dataZipManager   = DataZipManager(  self._imgLoaderManager, self._dataManager )      # initial image save manager
@@ -155,8 +157,8 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
     # ======================================================================
     def _resetFilterEvent( self ):
         """press reset button event"""
-        self._GpSliderEdit.setValue( 0 )
-        self._BpSliderEdit.setValue( 1000 )
+        self._filterWidget.getGpSliderEidt().setValue( 0 )
+        self._filterWidget.getBpSliderEidt().setValue( 1000 )
 
         # initial image widget showing
         for imgWidget in self._dataManager.getImageList():
@@ -166,8 +168,8 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
     # ======================================================================
     def _filterEvent( self ):
         """gp and bp filter event"""
-        gpPoint = self._GpSliderEdit.value()
-        bpPoint = self._BpSliderEdit.value()
+        gpPoint = self._filterWidget.getGpSliderEidt().value()
+        bpPoint = self._filterWidget.getBpSliderEidt().value()
 
         try:
             self._imgLoaderManager.loadImg()
@@ -192,12 +194,11 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
     def _initialEvent( self ):
         """inital all the event"""
         self._searchButton.clicked.connect( self._pressSearch )
-        self._GpSliderEdit.initialEvent()
-        self._BpSliderEdit.initialEvent()
-        self._GpSliderEdit.getSlider().valueChanged.connect( self._filterEvent )
-        self._BpSliderEdit.getSlider().valueChanged.connect( self._filterEvent )
+      
+        self._filterWidget.getGpSliderEidt().getSlider().valueChanged.connect( self._filterEvent )
+        self._filterWidget.getBpSliderEidt().getSlider().valueChanged.connect( self._filterEvent )
 
-        self._resetButton.clicked.connect( self._resetFilterEvent )
+        self._filterWidget.getResetButton().clicked.connect( self._resetFilterEvent )
 
         self._downloadWidget.getDownloadButton().clicked.connect( self._downloadAsZip )
 
