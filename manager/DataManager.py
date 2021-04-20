@@ -24,7 +24,7 @@ class DataManager():
     def getImageList( self ) -> List[ImageWidget]:
         return self._imgWidgetList
 
-    def isImageEmpty( self ) -> int:
+    def isImageEmpty( self ) -> bool:
         for imgWidget in self._imgWidgetList:
             if( imgWidget.isVisible() == True and imgWidget.isRemoved() == False ):
                 return False

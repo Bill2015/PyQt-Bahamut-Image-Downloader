@@ -174,7 +174,7 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
         else:
             image = QImage()
             if( image.loadFromData( self._imageData ) == False ):
-                self._imageLabel.setText( "圖片讀取失敗！" )
+                return
             else:
                 maxlen      = max( image.width(), image.height() )
                 scaleRate   = 1.0 if maxlen < self._MAX_IMAGE_SIZE else (float(maxlen) / self._MAX_IMAGE_SIZE)

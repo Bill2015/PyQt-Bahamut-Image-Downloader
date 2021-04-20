@@ -43,6 +43,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         # add Filter widget
         self._filterWidget = FilterWidget()
         self.findChild(QWidget, name='filterWidget').layout().addWidget(  self._filterWidget )
+        self._filterWidget.getSortSignal().connect( self._sortEvent )
         
 
         # getting inner object
@@ -158,13 +159,13 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
     def _resetFilterEvent( self ):
         """press reset button event"""
         self._filterWidget.getGpSliderEidt().setValue( 0 )
-        self._filterWidget.getBpSliderEidt().setValue( 1000 )
-
+        self._filterWidget.getBpSliderEidt().setValue( 1000 ) 
         # initial image widget showing
         for imgWidget in self._dataManager.getImageList():
             if( imgWidget.isVisible() == False ):
                 imgWidget.setRemoved( False )   # restore the image that delete by user
                 imgWidget.showWidget()
+    
     # ======================================================================
     def _filterEvent( self ):
         """gp and bp filter event"""
@@ -190,7 +191,22 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             if( type( e ) != TypeError ):
                 self._crashManager.writeCrashLog( str( e ) )
+    
+    # ======================================================================
+    def _sortEvent( self, sortType:int, order:bool ):
+        if( self._dataManager.isImageEmpty() ):
+            return
 
+        if( sortType == FilterWidget.SORT_BY_FLOOR ):
+            self._dataManager.getImageList().sort(key=lambda obj: obj.getImage().getFloor(), reverse=order)
+        elif( sortType == FilterWidget.SORT_BY_GP ):
+            self._dataManager.getImageList().sort(key=lambda obj: obj.getImage().getGP(), reverse=order)
+        elif( sortType == FilterWidget.SORT_BY_BP ):
+            self._dataManager.getImageList().sort(key=lambda obj: obj.getImage().getBP(), reverse=order)
+        
+        self._imgLoaderManager.reload( self._dataManager.getImageList() )
+        
+    # ======================================================================
     def _initialEvent( self ):
         """inital all the event"""
         self._searchButton.clicked.connect( self._pressSearch )

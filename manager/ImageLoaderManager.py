@@ -1,17 +1,19 @@
 
 from typing             import List
+
+from PyQt5.QtWidgets import QLayout
 from obj.ImageWidget    import ImageWidget
 from PyQt5.QtCore       import (QThreadPool, QEventLoop, QTimer)
 
 class ImageLoaderManager():
 
     def __init__(self, centerScrollArea ):
-        self._centerScrollArea  = centerScrollArea
-        self._flowLayout        = centerScrollArea.widget().layout()
-        self._threadPool        = QThreadPool()
-        self._maxThread         = 10
+        self._centerScrollArea          = centerScrollArea
+        self._flowLayout:QLayout        = centerScrollArea.widget().layout()
+        self._threadPool                = QThreadPool()
+        self._maxThread                 = 10
         self._threadPool.setMaxThreadCount( self._maxThread )
-        self._imgWidgetList     = List[ImageWidget]
+        self._imgWidgetList             = List[ImageWidget]
         self._centerScrollArea.verticalScrollBar().valueChanged.connect( self.loadImg )
         
     def load( self, imgList: list) -> bool:
@@ -32,6 +34,17 @@ class ImageLoaderManager():
             print( 'No images can load！' )
             return False
 
+    def reload( self, imgList: list) -> bool:
+        """reloading, if no any can be load return False, otherwise return true"""
+        self._imgWidgetList = imgList
+        if( len( self._imgWidgetList ) > 0 ):
+            for imgWidget in self._imgWidgetList:
+                if( imgWidget.isLoadFailed() == False ):
+                    self._flowLayout.addWidget( imgWidget ) 
+            return True
+        else:
+            print( 'No images can load！' )
+            return False
 
     def loadImg( self ):
         """scroll bar loading event"""
