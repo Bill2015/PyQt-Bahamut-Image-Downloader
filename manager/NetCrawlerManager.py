@@ -1,19 +1,20 @@
 # Web Crewler
-import urllib.request as URL_REQUEST
-import urllib.error   as URL_ERROR
-import math as MATH
+import urllib.request   as URL_REQUEST
+import urllib.error     as URL_ERROR
+import math             as MATH
+import pytz             as PYTZ
 
-from typing import List
-from bs4 import BeautifulSoup
+from typing             import List
+from bs4                import BeautifulSoup
+from datetime           import datetime, timezone
 
-from obj.NetImage import NetImage
-from obj.ImageWidget import ImageWidget
+from obj.NetImage       import NetImage
+from obj.ImageWidget    import ImageWidget
 
 class NetCrawlerManager:
     MAX_FLOOR_PER_PAGE = 20 # acconding to bahamut page, each page have 20 floor
     def __init__(self):
-        self.netImageList: List[NetImage] = []
-        self.netImageWidgetList: List[ImageWidget] = []
+        self._timezone = PYTZ.timezone('Asia/Taipei')
         pass
 
     def _getScore( self, element ):
@@ -58,13 +59,17 @@ class NetCrawlerManager:
         
     def getData( self, url: str, floor=[1, 999999], outputDebugTxt=False ) -> List[ImageWidget]:
         """ get the bahamut image"""
+        # initial data
+        netImageList: List[NetImage] = []
+        netImageWidgetList: List[ImageWidget] = []
 
         # get the info of url
         [bsn, snA, maxFloor, maxPage] = self._getUrlData( url )
        
-        self.bsnPre     = bsn
-        self.snaPre     = snA
-        self.maxFloor   = maxFloor
+        self._bsnPre     = bsn
+        self._snaPre     = snA
+        self._floorStart = floor[0]
+        self._floorEnd   = floor[1]
 
         # setting floor
         currentMinPage = MATH.ceil( floor[0] / self.MAX_FLOOR_PER_PAGE )
@@ -97,6 +102,7 @@ class NetCrawlerManager:
                 if nowFloor < floor[0]:
                     continue
                 elif nowFloor > floor[1]:
+                    self._floorEnd = nowFloor
                     break
                 
                 # get this artcle infomation
@@ -117,19 +123,23 @@ class NetCrawlerManager:
                     netImageBuilder.setImageUrl( imgURL[ "href" ] )
                     netImage = netImageBuilder.build()
 
-                    self.netImageList.append( netImage )                            # raw data net image
-                    self.netImageWidgetList.append( ImageWidget( netImage ) )      # net image widget object
+                    netImageList.append( netImage )                            # raw data net image
+                    netImageWidgetList.append( ImageWidget( netImage ) )      # net image widget object
 
 
         # just verify web crawler are correct or not
         if( outputDebugTxt == True ):
             text_file = open("result.txt", "wb")
-            for netImage in self.netImageList:
+            for netImage in netImageList:
                 text_file.write( netImage.toString() )
             text_file.close()
 
 
-        return self.netImageWidgetList
+        return netImageWidgetList
+
+    def getNowTaskInfo( self ):
+        formatDate = datetime.now( timezone.utc ).astimezone( self._timezone ).strftime ("%Y-%m-%d")
+        return [self._bsnPre,  self._snaPre, [self._floorStart, self._floorEnd], formatDate]  
 
         
         

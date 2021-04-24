@@ -1,7 +1,8 @@
+from manager.HistoryManager import HistoryManager
 from obj.FilterWidget import FilterWidget
 from obj.ProgressWidget import ProgressWidget
 from PyQt5              import QtWidgets, uic
-from PyQt5.QtWidgets    import (QCheckBox, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QSlider, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets    import (QCheckBox, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QVBoxLayout, QWidget)
 from PyQt5.QtGui        import *
 from PyQt5.QtCore       import * 
 
@@ -14,7 +15,6 @@ import urllib.error     as URL_ERROR
 
 
 from obj.FlowLayout             import FlowLayout
-from obj.QSliderLineEdit        import QSliderLineEdit
 from obj.WarningDialog          import WarningDialog
 from manager.DataManager        import DataManager
 from manager.ImageLoaderManager import ImageLoaderManager
@@ -25,20 +25,15 @@ from manager.CrashLogManager    import CrashLogManager
 
 
 
-# 設計好的ui檔案路徑
-qtCreatorFile = OS.getcwd() + "\\".join( ["","resource", "ui", "mainwindow.ui"] ) 
-# 讀入用Qt Designer設計的GUI layout
-Ui_MainWindow, _ = uic.loadUiType(qtCreatorFile)   
-
 # Python的多重繼承 MainUi 繼承自兩個類別
-class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
-            
+class MainUi(QtWidgets.QMainWindow):
+    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resource", "ui"] ) 
     # =========================================================
     # ==================== UI main program ====================
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
-        self.setupUi(self)
+
+        uic.loadUi( MainUi.UI_RESOURCE_PATH + "\\" + "mainwindow.ui", self )
 
         # add Filter widget
         self._filterWidget = FilterWidget()
@@ -70,11 +65,24 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         self._dataZipManager   = DataZipManager(  self._imgLoaderManager, self._dataManager )      # initial image save manager
         self._dataZipManager.getProgressSignal().connect( self._updateZipProgress )
         self._crashManager     = CrashLogManager()
+        self._historyManager   = HistoryManager()
+        self._netCrawlerManager= NetCrawlerManager()
 
         # initial warning messsage 
         self._warningBox       = WarningDialog( self )
 
+        
+        
+        self._historyInitialLoad()
         self._initialEvent()
+
+
+    def _historyInitialLoad( self ):
+        try:
+            self._historyManager.load()
+        # Error Message is history data format error
+        except:
+            self._warningBox.show( "下載歷史紀錄讀取失敗！\n可能是格式錯誤或者其他問題！" )
 
     # ======================================================================
     def _pressSearch(self):
@@ -97,7 +105,10 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
         imgWidgetList = []
         try:
             floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
-            imgWidgetList = NetCrawlerManager().getData( searchUrl, floor )
+
+            imgWidgetList = self._netCrawlerManager.getData( searchUrl, floor )
+            [bsn, snA, floors, date] = self._netCrawlerManager.getNowTaskInfo()
+            self._historyManager.addHistory( bsn, snA, floors, date )
         # Occuer an error
         except Exception as e: 
             # Error Message
