@@ -3,20 +3,15 @@ from PyQt5.QtWidgets    import QLabel, QProgressBar, QPushButton, QSizePolicy, Q
 
 import os as OS
 
-# 設計好的ui檔案路徑
-qtCreatorFile = OS.getcwd() + "\\".join( ["","resource", "ui", "downloadWidget.ui"] ) 
-# 讀入用Qt Designer設計的GUI layout
-downloadWidgetUI, _ = uic.loadUiType(qtCreatorFile)   
 
-class ProgressWidget(QWidget, downloadWidgetUI):
+class ProgressWidget(QWidget):
     PROGRESS_WIDGET_SHOW = 0
     PROGRESS_WIDGET_HIDE = 1
     PROGRESS_WIDGET_NORML = 2
 
-    def __init__(self) -> None:
+    def __init__(self, uiPath) -> None:
         QWidget.__init__( self )
-        downloadWidgetUI.__init__( self )
-        self.setupUi( self )
+        uic.loadUi( uiPath + "downloadWidget.ui", self )
         # ----------------------------------------------------------
         self._downloadBtn: QPushButton      = self.findChild(QPushButton, name='downloadButton')
         self._label: QLabel                 = self.findChild(QLabel, name='progressLabel')

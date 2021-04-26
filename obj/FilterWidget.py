@@ -6,12 +6,7 @@ from PyQt5                  import uic
 from obj.QSliderLineEdit    import QSliderLineEdit
 import os as OS
 
-# 設計好的ui檔案路徑
-qtCreatorFile = OS.getcwd() + "\\".join( ["","resource", "ui", "filterWidget.ui"] ) 
-# 讀入用Qt Designer設計的GUI layout
-FilterWidgetUI, _ = uic.loadUiType(qtCreatorFile)   
-
-class FilterWidget(QWidget, FilterWidgetUI):
+class FilterWidget(QWidget):
     _sortSignal = pyqtSignal(int, bool)
 
     SORT_BY_FLOOR   = 1
@@ -19,10 +14,10 @@ class FilterWidget(QWidget, FilterWidgetUI):
     SORT_BY_BP      = 3
     ORDER_ASCENDING       = True
     ORDER_DESCENDING      = False
-    def __init__(self) -> None:
+    def __init__(self, uiPath) -> None:
         QWidget.__init__( self )
-        FilterWidgetUI.__init__( self )
-        self.setupUi( self )
+
+        uic.loadUi( uiPath + "filterWidget.ui", self )
         # -----------------------------------------
         self._resetButton:QPushButton       = self.findChild(QPushButton, name='resetButton')       # reset filter button
         self._groupbox:QGroupBox            = self.findChild(QGroupBox, name='filterGroupBox')

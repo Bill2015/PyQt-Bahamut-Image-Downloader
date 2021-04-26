@@ -12,13 +12,8 @@ import traceback    as TRACE
 import urllib.request as URL_REQUEST
 import urllib.error
 
-# 設計好的ui檔案路徑
-qtImgCreatorFile = OS.getcwd() + "\\".join( ["","resource", "ui", "imageview.ui"] ) 
-# 讀入用Qt Designer設計的GUI layout
-uiImageWidget, QtImgBaseClass = uic.loadUiType(qtImgCreatorFile)   
 
-
-class ImageWidget(QtWidgets.QWidget, uiImageWidget):
+class ImageWidget(QtWidgets.QWidget):
     class ImageLoaderThread(QRunnable):
         def __init__(self, imageWidget ):
             super(ImageWidget.ImageLoaderThread, self).__init__()
@@ -46,10 +41,12 @@ class ImageWidget(QtWidgets.QWidget, uiImageWidget):
     _REQUEST_HEADER = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     # a signal to let the thread call on it
     _showImgSignal = pyqtSignal()
+
+    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resource", "ui",""] ) 
+
     def __init__(self, netImage):
         QtWidgets.QWidget.__init__(self)
-        uiImageWidget.__init__(self)
-        self.setupUi(self)
+        uic.loadUi( ImageWidget.UI_RESOURCE_PATH + "imageview.ui", self )
 
         self._authorNameLabel:QLabel    = self.findChild(QLabel, name='authorNameLabel')    # label of author
         self._authorIDLabel:QLabel      = self.findChild(QLabel, name='authorIDLabel')      # label of author ID

@@ -23,20 +23,18 @@ from manager.DataZipManager     import DataZipManager
 from manager.CrashLogManager    import CrashLogManager
 
 
-
-
 # Python的多重繼承 MainUi 繼承自兩個類別
 class MainUi(QtWidgets.QMainWindow):
-    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resource", "ui"] ) 
+    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resource", "ui",""] ) 
     # =========================================================
     # ==================== UI main program ====================
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
 
-        uic.loadUi( MainUi.UI_RESOURCE_PATH + "\\" + "mainwindow.ui", self )
+        uic.loadUi( MainUi.UI_RESOURCE_PATH + "mainwindow.ui", self )
 
         # add Filter widget
-        self._filterWidget = FilterWidget()
+        self._filterWidget = FilterWidget( uiPath=MainUi.UI_RESOURCE_PATH )
         self.findChild(QWidget, name='filterWidget').layout().addWidget(  self._filterWidget )
         self._filterWidget.getSortSignal().connect( self._sortEvent )
         
@@ -56,7 +54,7 @@ class MainUi(QtWidgets.QMainWindow):
         self._centerScrollArea.widget().setLayout( self._flowLayout )
 
         # initial progress bar
-        self._downloadWidget   = ProgressWidget()
+        self._downloadWidget   = ProgressWidget( uiPath=MainUi.UI_RESOURCE_PATH )
         self.findChild(QVBoxLayout, name='centerVerticalLayout').addWidget( self._downloadWidget )
         
         # initial manager
