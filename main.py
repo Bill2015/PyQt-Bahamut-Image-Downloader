@@ -102,13 +102,19 @@ class MainUi(QtWidgets.QMainWindow):
 
         imgWidgetList = []
         try:
+            # get user input floor
+            floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
+
             # paser url data info
-            [bsn, snA, maxFloor, maxPage] = self._netCrawlerManager.parseUrl( searchUrl )
+            [bsn, snA, _, maxPage] = self._netCrawlerManager.parseUrl( searchUrl )
+
+            if( self._historyManager.checkDuplicate( bsn, snA, floor ) == True ):
+                print("AAAAAAAA")
 
             # load html page data
-            floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
             imgWidgetList = self._netCrawlerManager.getData( bsn, snA, maxPage, floor )
 
+            # get url info
             [bsn, snA, floors, date] = self._netCrawlerManager.getNowTaskInfo()
             self._historyManager.addHistory( bsn, snA, floors, date )
         # Occuer an error
@@ -218,7 +224,14 @@ class MainUi(QtWidgets.QMainWindow):
             self._dataManager.getImageList().sort(key=lambda obj: obj.getImage().getBP(), reverse=order)
         
         self._imgLoaderManager.reload( self._dataManager.getImageList() )
-        
+    
+    # ======================================================================
+    # override closeEvent
+    def closeEvent(self, event):
+        self._historyManager.save() # save history data into file
+        event.accept()
+
+
     # ======================================================================
     def _initialEvent( self ):
         """inital all the event"""
@@ -230,6 +243,7 @@ class MainUi(QtWidgets.QMainWindow):
         self._filterWidget.getResetButton().clicked.connect( self._resetFilterEvent )
 
         self._downloadWidget.getDownloadButton().clicked.connect( self._downloadAsZip )
+
 
 
 

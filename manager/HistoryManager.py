@@ -40,6 +40,14 @@ class HistoryManager():
         self._historyData.append( HistoryManager.History( bsn, snA, floors, date ) )
         
 
+    def checkDuplicate( self, bsn, snA, floors ) -> bool:
+        for history in self._historyData:
+            if( history.getBsn() == bsn and history.getSnA() == snA ):
+                floorRange = range( history.getFloors()[0], history.getFloors()[1] )
+                if( ( floors[0] in floorRange ) or ( floors[1] in floorRange ) ):
+                    return True
+        return False
+
     def save( self ):
         if( len( self._historyData ) > 0 ):
             data = {}

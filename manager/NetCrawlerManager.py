@@ -84,6 +84,7 @@ class NetCrawlerManager:
         currentMaxPage = min( MATH.ceil( floor[1] / self.MAX_FLOOR_PER_PAGE ), maxPage )
         nowPage = currentMinPage
         
+        nowFloor = 0
         # get every page of this form
         for nowPage in range(currentMinPage, currentMaxPage + 1):  
             url = "".join( ["https://forum.gamer.com.tw/C.php?", "page=", str(nowPage), "&bsn=", bsn, "&snA=", snA] )
@@ -110,7 +111,6 @@ class NetCrawlerManager:
                 if nowFloor < floor[0]:
                     continue
                 elif nowFloor > floor[1]:
-                    self._floorEnd = nowFloor
                     break
                 
                 # get this artcle infomation
@@ -133,7 +133,9 @@ class NetCrawlerManager:
 
                     netImageList.append( netImage )                            # raw data net image
                     netImageWidgetList.append( ImageWidget( netImage ) )      # net image widget object
-
+            
+        
+        self._floorEnd = nowFloor
 
         # just verify web crawler are correct or not
         if( outputDebugTxt == True ):
