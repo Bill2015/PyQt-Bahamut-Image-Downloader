@@ -25,7 +25,7 @@ from manager.CrashLogManager    import CrashLogManager
 
 # Python的多重繼承 MainUi 繼承自兩個類別
 class MainUi(QtWidgets.QMainWindow):
-    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resource", "ui",""] ) 
+    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resources", "ui",""] ) 
     # =========================================================
     # ==================== UI main program ====================
     def __init__(self):
@@ -91,7 +91,7 @@ class MainUi(QtWidgets.QMainWindow):
 
         # Error Message check the url is legal
         if( searchUrl == "" ):
-            self._warningBox.show( "搜尋欄不可為空！" )
+            self._warningBox.show( "搜尋欄不可為空！",  title="你好阿", type=WarningDialog.DIALOG_INFO )
             return
         
         # check the user is want to clear previous search result

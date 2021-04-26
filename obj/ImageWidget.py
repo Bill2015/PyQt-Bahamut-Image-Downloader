@@ -42,7 +42,7 @@ class ImageWidget(QtWidgets.QWidget):
     # a signal to let the thread call on it
     _showImgSignal = pyqtSignal()
 
-    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resource", "ui",""] ) 
+    UI_RESOURCE_PATH = OS.getcwd() + "\\".join( ["","resources", "ui",""] ) 
 
     def __init__(self, netImage):
         QtWidgets.QWidget.__init__(self)

@@ -37,7 +37,7 @@ border-radius: 24px
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="WarningIconLabel">
+         <widget class="QLabel" name="titleIconLabel">
           <property name="maximumSize">
            <size>
             <width>45</width>
@@ -50,16 +50,13 @@ border-radius: 24px
           <property name="text">
            <string/>
           </property>
-          <property name="pixmap">
-           <pixmap>../waring.png</pixmap>
-          </property>
           <property name="scaledContents">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="warningLabel">
+         <widget class="QLabel" name="titleLabel">
           <property name="maximumSize">
            <size>
             <width>16777215</width>
