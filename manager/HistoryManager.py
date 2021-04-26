@@ -47,6 +47,12 @@ class HistoryManager():
         def setTitle( self, title:str ):
             self._title = title
 
+        def checkFloorInRange( self, floor:list ):
+            floorRange = range( self._floors[0], self._floors[1] )
+            if( ( floor[0] in floorRange ) or ( floor[1] in floorRange ) ):
+                return True
+            return False
+
     def __init__(self):
         self._historyData:List[HistoryManager.History] = list()
         pass
@@ -73,15 +79,7 @@ class HistoryManager():
             if( history.getBsn() == bsn and history.getSnA() == snA ):
                 return [history.getFloors()[1], 99999]
         return None
-
-    def checkDuplicate( self, bsn, snA, floors ) -> bool:
-        for history in self._historyData:
-            if( history.getBsn() == bsn and history.getSnA() == snA ):
-                floorRange = range( history.getFloors()[0], history.getFloors()[1] )
-                if( ( floors[0] in floorRange ) or ( floors[1] in floorRange ) ):
-                    return True
-        return False
-
+       
     def save( self ):
         if( len( self._historyData ) > 0 ):
             data = {}
@@ -97,7 +95,7 @@ class HistoryManager():
     def load( self ):
         filePath = "history.json"
         if OS.path.isfile( filePath ):
-            with open('history.json') as file:
+            with open('history.json', encoding='utf-8') as file:
                 data = JSON.load( file )
                 for history in data['history']:
                     # print('bsn: '       + history['bsn'])
@@ -105,5 +103,5 @@ class HistoryManager():
                     # print('floor: '     + str(history['floor']))
                     # print('date:'       + history['date'])
                     # print('')
-                    self._historyData.append( HistoryManager.History(history['title'], history['bsn'], history['snA'], list(history['floor']), history['date'] ) )
+                    self._historyData.append( HistoryManager.History( history['title'], history['bsn'], history['snA'], list(history['floor']), history['date'] ) )
                 

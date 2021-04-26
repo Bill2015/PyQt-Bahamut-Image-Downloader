@@ -1,0 +1,10 @@
+=============== crash report =============== 
+'cp950' codec can't decode byte 0xe3 in position 54: illegal multibyte sequence
+Traceback (most recent call last):
+  File "d:/GitHubRepo/PyQt-Bahamut-Image-Downloader/main.py", line 80, in _historyInitialLoad
+    self._historyManager.load()
+  File "d:\GitHubRepo\PyQt-Bahamut-Image-Downloader\manager\HistoryManager.py", line 99, in load
+    data = JSON.load( file )
+  File "D:\ProgramPackage\Anaconda\envs\application\lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+UnicodeDecodeError: 'cp950' codec can't decode byte 0xe3 in position 54: illegal multibyte sequence

@@ -79,7 +79,8 @@ class MainUi(QtWidgets.QMainWindow):
         try:
             self._historyManager.load()
         # Error Message is history data format error
-        except:
+        except Exception as e:
+            self._crashManager.writeCrashLog( str( e ) )
             self._warningBox.show( "下載歷史紀錄讀取失敗！\n可能是格式錯誤或者其他問題！" )
 
     # ======================================================================
@@ -103,24 +104,24 @@ class MainUi(QtWidgets.QMainWindow):
         imgWidgetList = []
         try:
             # get user input floor
-            floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
+            inputFloor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
 
             # paser url data info
             [bsn, snA, _, maxPage] = self._netCrawlerManager.parseUrl( searchUrl )
 
             # check the user is download this page before
-            if( self._historyManager.checkDuplicate( bsn, snA, floor ) == True ):
-                history = self._historyManager.getHistory( bsn, snA )
-                
-                reply = self._warningBox.show( "",  title="下載串重複！", type=WarningDialog.DIALOG_INFO, cancelNeeded=True )
+            history = self._historyManager.getHistory( bsn, snA )
+            if( (history != None) and history.checkFloorInRange( inputFloor ) == True ):
+                message = " ".join( ["你在", history.getDate(), "時\n下載過此串", str(history.getFloors()[0]), "至", str(history.getFloors()[1]), "樓", "\n\n", "請問你要繼續嗎？"   ] )
+                reply = self._warningBox.show( message,  title="下載串重複！", type=WarningDialog.DIALOG_INFO, cancelNeeded=True )
                 # if user want to change new floor
-                if( reply == QDialog.Accepted ):
-                   pass    
+                if( reply == QDialog.Rejected ):
+                    return
                 
             # load html page data
-            imgWidgetList = self._netCrawlerManager.getData( bsn, snA, maxPage, floor )
+            imgWidgetList = self._netCrawlerManager.getData( bsn, snA, maxPage, inputFloor )
 
-            # get url info
+            # add url info to history
             [title, bsn, snA, floors, date] = self._netCrawlerManager.getNowTaskInfo()
             self._historyManager.addHistory( title, bsn, snA, floors, date )
         # Occuer an error
