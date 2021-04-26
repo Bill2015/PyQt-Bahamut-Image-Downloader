@@ -19,6 +19,7 @@ class NetCrawlerManager:
         self._snaPre     = ""
         self._floorStart = 1
         self._floorEnd   = 99999
+        self._title      = ""
         pass
 
     def _getScore( self, element ):
@@ -77,6 +78,7 @@ class NetCrawlerManager:
         self._snaPre     = snA
         self._floorStart = floor[0]
         self._floorEnd   = floor[1]
+        self._title      = ""
         
 
         # setting floor
@@ -94,7 +96,10 @@ class NetCrawlerManager:
 
             soupHTML = BeautifulSoup( htmlRaw, "html.parser")
             
-    
+            if( nowFloor == 0 ):
+                self._title = soupHTML.select_one( "head" ).select_one( "title" ).text
+                print( self._title )
+        
 
             # get whole articles in this page
             for article in soupHTML.select( "section" ):
@@ -149,7 +154,7 @@ class NetCrawlerManager:
 
     def getNowTaskInfo( self ):
         formatDate = datetime.now( timezone.utc ).astimezone( self._timezone ).strftime ("%Y-%m-%d")
-        return [self._bsnPre,  self._snaPre, [self._floorStart, self._floorEnd], formatDate]  
+        return [ self._title, self._bsnPre,  self._snaPre, [self._floorStart, self._floorEnd], formatDate]  
 
         
         

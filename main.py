@@ -2,7 +2,7 @@ from manager.HistoryManager import HistoryManager
 from obj.FilterWidget import FilterWidget
 from obj.ProgressWidget import ProgressWidget
 from PyQt5              import QtWidgets, uic
-from PyQt5.QtWidgets    import (QCheckBox, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets    import (QCheckBox, QDialog, QFileDialog, QLineEdit, QPushButton, QScrollArea, QSpinBox, QVBoxLayout, QWidget)
 from PyQt5.QtGui        import *
 from PyQt5.QtCore       import * 
 
@@ -91,7 +91,7 @@ class MainUi(QtWidgets.QMainWindow):
 
         # Error Message check the url is legal
         if( searchUrl == "" ):
-            self._warningBox.show( "搜尋欄不可為空！",  title="你好阿", type=WarningDialog.DIALOG_INFO )
+            self._warningBox.show( "搜尋欄不可為空！")
             return
         
         # check the user is want to clear previous search result
@@ -108,15 +108,21 @@ class MainUi(QtWidgets.QMainWindow):
             # paser url data info
             [bsn, snA, _, maxPage] = self._netCrawlerManager.parseUrl( searchUrl )
 
+            # check the user is download this page before
             if( self._historyManager.checkDuplicate( bsn, snA, floor ) == True ):
-                print("AAAAAAAA")
-
+                history = self._historyManager.getHistory( bsn, snA )
+                
+                reply = self._warningBox.show( "",  title="下載串重複！", type=WarningDialog.DIALOG_INFO, cancelNeeded=True )
+                # if user want to change new floor
+                if( reply == QDialog.Accepted ):
+                   pass    
+                
             # load html page data
             imgWidgetList = self._netCrawlerManager.getData( bsn, snA, maxPage, floor )
 
             # get url info
-            [bsn, snA, floors, date] = self._netCrawlerManager.getNowTaskInfo()
-            self._historyManager.addHistory( bsn, snA, floors, date )
+            [title, bsn, snA, floors, date] = self._netCrawlerManager.getNowTaskInfo()
+            self._historyManager.addHistory( title, bsn, snA, floors, date )
         # Occuer an error
         except Exception as e: 
             # Error Message

@@ -20,6 +20,7 @@ class WarningDialog( QDialog ):
 
         # ----------------------------------------------
         self._confirmButton:QPushButton         = self.findChild( QPushButton, name='okButton' )
+        self._cancelButton:QPushButton          = self.findChild( QPushButton, name='cancelButton' )
         self._messageLabel:QPlainTextEdit       = self.findChild( QPlainTextEdit, name='messageLabel' )
         self._iconLabel:QLabel                  = self.findChild( QLabel, name='titleIconLabel' )
         self._titleLable:QLabel                 = self.findChild( QLabel, name='titleLabel' )
@@ -34,19 +35,29 @@ class WarningDialog( QDialog ):
         self._waringImg = QPixmap( path + 'waring.png' )      # the waring image Pixmap
 
 
-        self._confirmButton.clicked.connect( self.close )
+        self._confirmButton.clicked.connect( self.confirm )
+        self._cancelButton.clicked.connect( self.cancel )
         self.installEventFilter( self )
 
-    def show( self, message:str = "你好", title="警告", type=DIALOG_WARNING ):
+    def show( self, message:str = "你好", title="警告", type=DIALOG_WARNING, cancelNeeded=False ):
         if( type == self.DIALOG_WARNING ):
             self._iconLabel.setPixmap( self._waringImg )
         else:
             self._iconLabel.setPixmap( self._infoImg )
             
+        self._cancelButton.setVisible( cancelNeeded )
         self._titleLable.setText( title )
         self.setMessage( message )
         WINSOUND.PlaySound( 'SystemHand', WINSOUND.SND_ASYNC )
-        QDialog.show( self )
+        return self.exec()
+
+    def confirm( self ) -> bool:
+        self.accept()
+        return self.close()       
+    
+    def cancel( self ) -> bool:
+        self.reject()
+        return self.close()
 
     def setMessage( self, message:str ):
         """ set message """
