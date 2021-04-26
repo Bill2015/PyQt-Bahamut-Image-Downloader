@@ -15,6 +15,10 @@ class NetCrawlerManager:
     MAX_FLOOR_PER_PAGE = 20 # acconding to bahamut page, each page have 20 floor
     def __init__(self):
         self._timezone = PYTZ.timezone('Asia/Taipei')
+        self._bsnPre     = ""
+        self._snaPre     = ""
+        self._floorStart = 1
+        self._floorEnd   = 99999
         pass
 
     def _getScore( self, element ):
@@ -56,20 +60,24 @@ class NetCrawlerManager:
         print( "bsn:", bsn, "  snA:", snA, "  max floor:", maxFloor, "   max page:", maxPage )
 
         return [bsn, snA,  int( maxFloor ), maxPage]
+    
+    def parseUrl( self, url:str ):
+        # get the info of url
+        [bsn, snA, maxFloor, maxPage] = self._getUrlData( url )
+        return [bsn, snA, maxFloor, maxPage]
         
-    def getData( self, url: str, floor=[1, 999999], outputDebugTxt=False ) -> List[ImageWidget]:
+    
+    def getData( self, bsn: str, snA:str, maxPage:int, floor=[1, 999999], outputDebugTxt=False ) -> List[ImageWidget]:
         """ get the bahamut image"""
         # initial data
         netImageList: List[NetImage] = []
         netImageWidgetList: List[ImageWidget] = []
 
-        # get the info of url
-        [bsn, snA, maxFloor, maxPage] = self._getUrlData( url )
-       
         self._bsnPre     = bsn
         self._snaPre     = snA
         self._floorStart = floor[0]
         self._floorEnd   = floor[1]
+        
 
         # setting floor
         currentMinPage = MATH.ceil( floor[0] / self.MAX_FLOOR_PER_PAGE )

@@ -102,9 +102,13 @@ class MainUi(QtWidgets.QMainWindow):
 
         imgWidgetList = []
         try:
-            floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
+            # paser url data info
+            [bsn, snA, maxFloor, maxPage] = self._netCrawlerManager.parseUrl( searchUrl )
 
-            imgWidgetList = self._netCrawlerManager.getData( searchUrl, floor )
+            # load html page data
+            floor = [ int(self._floorEditText[0].text()), int(self._floorEditText[1].text()) ]
+            imgWidgetList = self._netCrawlerManager.getData( bsn, snA, maxPage, floor )
+
             [bsn, snA, floors, date] = self._netCrawlerManager.getNowTaskInfo()
             self._historyManager.addHistory( bsn, snA, floors, date )
         # Occuer an error
